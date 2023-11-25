@@ -1,97 +1,180 @@
 package com.example.threenitasapp.ui.screens.login
 
+import android.annotation.SuppressLint
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.threenitasapp.R
-import com.example.threenitasapp.ui.theme.dark_jungle_green
+import com.example.threenitasapp.ui.theme.ThreenitasAppTheme
+import com.example.threenitasapp.ui.theme.dark_jungle_green_1
+import com.example.threenitasapp.ui.theme.dim_gray
 import com.example.threenitasapp.ui.theme.forest_green
+import com.example.threenitasapp.ui.theme.onyx
 import com.example.threenitasapp.ui.theme.white
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+
+
+//@Preview(showSystemUi = true, showBackground = true, device = "id:pixel_3")
+@SuppressLint("CoroutineCreationDuringComposition")
+@Composable
+fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
+
+    var userId by rememberSaveable {
+        mutableStateOf("")
+    }
+
+    var password by rememberSaveable {
+        mutableStateOf("")
+    }
+    var dropDownShow by remember {
+        mutableStateOf(false)
+    }
+    viewModel.viewModelScope.launch {
+        viewModel.getToken("", "")
+    }
+    LoginScaffoldSetup(
+        Modifier.fillMaxSize(),
+        userId,
+        password,
+        dropDownShow,
+        { userId = it },
+        { password = it },
+        { dropDownShow = !dropDownShow },
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showSystemUi = false)
 @Composable
-fun LoginScreen() {
-    Surface(modifier = Modifier.fillMaxSize()) {
-        Scaffold(modifier = Modifier
-            .fillMaxSize()
-            .background(dark_jungle_green), topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier.padding(10.dp),
-                title = {
-                    Text(text = "Σύνδεση")
-                },
-            )
-        }) { it ->
-            LoginScreenContent(it)
+fun LoginScaffoldSetup(
+    modifier: Modifier = Modifier,
+    userId: String,
+    password: String,
+    dropDownShow: Boolean,
+    onChangeUserID: (String) -> Unit,
+    onChangePass: (String) -> Unit,
+    omnDropDownChange: () -> Unit,
+) {
+    ThreenitasAppTheme {
+        Surface(
+            modifier = modifier,
+        ) {
+            Scaffold(modifier = modifier,
+                topBar = {
+                    CenterAlignedTopAppBar(
+                        title = {
+                            Text(
+                                text = "Σύνδεση",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = white
+                            )
+                        },
+                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(onyx)
+                    )
+                }) {
+                LoginScreenContent(
+                    it,
+                    userId,
+                    password,
+                    dropDownShow,
+                    onChangeUserID,
+                    onChangePass,
+                    omnDropDownChange
+                )
+            }
         }
-
     }
 }
 
 
 @Composable
-fun LoginScreenContent(paddingValues: PaddingValues) {
+fun LoginScreenContent(
+    paddingValues: PaddingValues,
+    userId: String,
+    password: String,
+    dropDownShow: Boolean,
+    onChangeUserID: (String) -> Unit,
+    onChangePass: (String) -> Unit,
+    omnDropDownChange: () -> Unit,
+) {
     Surface(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues)
+            .padding(paddingValues),
+
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize(2f)
+                .fillMaxSize()
+                .padding(top = 70.dp)
         ) {
-            UserField()
-            UserField(topPadding = 40.dp)
-        }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(50.dp),
-            verticalArrangement = Arrangement.Bottom,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Button(
-                onClick = { /*TODO*/ },
-                modifier = Modifier
-                    .width(188.dp)
-                    .height(49.dp),
-                colors = ButtonColors(
-                    containerColor = white,
-                    contentColor = forest_green,
-                    disabledContainerColor = ,
-                    disabledContentColor =
-
-                )
+            UserField(
+                title = "UserID",
+                value = userId,
+                placeholder = "user id",
+                onValueChange = onChangeUserID
+            )
+            UserField(
+                title = "Κωδικός",
+                value  = password,
+                placeholder = "",
+                topPadding = 30.dp,
+                onValueChange = onChangePass,
+                passShow = true
+            )
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Bottom
             ) {
-                Text(text = "Σύνδεση")
+                LanguageDropDown(dropDownShow, omnDropDownChange)
+                Spacer(modifier = Modifier.height(14.dp))
+                LoginButton()
             }
         }
     }
@@ -99,25 +182,197 @@ fun LoginScreenContent(paddingValues: PaddingValues) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserField(topPadding: Dp = 0.dp) {
+fun UserField(
+    title: String,
+    value: String,
+    placeholder: String,
+    onValueChange: (String) -> Unit,
+    topPadding: Dp = 0.dp,
+    passShow: Boolean = false,
+) {
+    var inputText by remember {
+        mutableStateOf("")
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 36.dp, top = topPadding, end = 36.dp)
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {
-            Text(text = "UserID")
-            Box(modifier = Modifier.size(20.dp)) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_login_info),
-                    colorFilter = ColorFilter.tint(forest_green),
-                    contentDescription = "login info icon",
-                    modifier = Modifier.clickable {
+            Row {
 
-                    }
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = white
                 )
+                Box(
+                    modifier = Modifier
+                        .padding(start = 12.dp)
+                        .size(20.dp),
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_info_login),
+                        contentDescription = "login info icon",
+                        modifier = Modifier.clickable {
+
+                        }
+                    )
+                }
+            }
+            if (passShow)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    Text(text = "Προβολή", color = forest_green)
+                }
+        }
+        TextField(
+            value = value,
+            onValueChange = {
+                onValueChange(it)
+            },
+            textStyle = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.textFieldColors(
+                textColor = white,
+                containerColor = dark_jungle_green_1,
+                unfocusedIndicatorColor = forest_green
+            ),
+        )
+    }
+}
+
+@Composable
+fun LoginButton() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 50.dp),
+        verticalArrangement = Arrangement.Bottom,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        OutlinedButton(
+            onClick = { /*TODO*/ },
+            modifier = Modifier
+                .width(188.dp)
+                .height(49.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent,
+                contentColor = forest_green,
+                disabledContainerColor = dim_gray,
+                disabledContentColor = dim_gray
+
+            ),
+            border = BorderStroke(3.dp, forest_green)
+        ) {
+            Text(text = "Σύνδεση", fontSize = 17.sp)
+        }
+    }
+}
+
+//@Preview
+@Composable
+fun LanguageDropDown(
+    dropDownShow: Boolean = false,
+    omnDropDownChange: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(162.dp)
+            .padding(end = 32.dp),
+        horizontalAlignment = Alignment.End
+    ) {
+        Card(
+            modifier = Modifier
+                .height(52.dp)
+                .width(150.dp),
+            shape = RoundedCornerShape(25.5.dp),
+            colors = CardDefaults.cardColors(containerColor = onyx)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_greek_flag),
+                        modifier = Modifier.size(32.dp),
+                        contentDescription = null
+                    )
+                    Text(
+                        text = "Greek",
+                        color = white,
+                        modifier = Modifier.padding(start = 10.dp)
+                    )
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 10.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_arrow_drop_down_menu),
+                        modifier = Modifier
+                            .width(15.dp)
+                            .height(9.dp)
+                            .clickable {
+                                omnDropDownChange()
+                            },
+                        contentDescription = null,
+
+                        )
+                }
             }
         }
-        TextField(value = "123456", onValueChange = {}, modifier = Modifier.fillMaxWidth())
+        if (dropDownShow) {
+            Spacer(modifier = Modifier.padding(bottom = 6.dp))
+            Card(
+                modifier = Modifier
+                    .width(150.dp),
+                shape = RoundedCornerShape(25.5.dp),
+                colors = CardDefaults.cardColors(containerColor = onyx),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_us_flag),
+                            modifier = Modifier.size(32.dp),
+                            contentDescription = null
+                        )
+                        Text(
+                            text = "English",
+                            color = white,
+                            modifier = Modifier.padding(start = 10.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.padding(top = 10.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_greek_flag),
+                            modifier = Modifier.size(32.dp),
+                            contentDescription = null
+                        )
+                        Text(
+                            text = "Greek",
+                            color = white,
+                            modifier = Modifier.padding(start = 10.dp)
+                        )
+                    }
+                }
+            }
+        }
     }
 }
