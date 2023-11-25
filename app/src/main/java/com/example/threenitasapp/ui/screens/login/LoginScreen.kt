@@ -74,9 +74,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
     var dropDownShow by remember {
         mutableStateOf(false)
     }
-    viewModel.viewModelScope.launch {
-        viewModel.getToken("", "")
-    }
+
     LoginScaffoldSetup(
         Modifier.fillMaxSize(),
         userId,
