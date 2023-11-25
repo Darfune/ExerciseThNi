@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -42,21 +41,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.threenitasapp.R
+import com.example.threenitasapp.ui.screens.login.components.LanguageUiState
 import com.example.threenitasapp.ui.theme.ThreenitasAppTheme
 import com.example.threenitasapp.ui.theme.dark_jungle_green_1
 import com.example.threenitasapp.ui.theme.dim_gray
 import com.example.threenitasapp.ui.theme.forest_green
 import com.example.threenitasapp.ui.theme.onyx
 import com.example.threenitasapp.ui.theme.white
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 
 //@Preview(showSystemUi = true, showBackground = true, device = "id:pixel_3")
@@ -75,14 +71,20 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
         mutableStateOf(false)
     }
 
+    var language by rememberSaveable {
+        mutableStateOf(false)
+    }
+
     LoginScaffoldSetup(
         Modifier.fillMaxSize(),
         userId,
         password,
         dropDownShow,
+        language,
         { userId = it },
         { password = it },
         { dropDownShow = !dropDownShow },
+        { language = it }
     )
 }
 
@@ -93,9 +95,11 @@ fun LoginScaffoldSetup(
     userId: String,
     password: String,
     dropDownShow: Boolean,
+    language: Boolean,
     onChangeUserID: (String) -> Unit,
     onChangePass: (String) -> Unit,
     omnDropDownChange: () -> Unit,
+    onLanguageChange: (Boolean) -> Unit,
 ) {
     ThreenitasAppTheme {
         Surface(
@@ -106,7 +110,7 @@ fun LoginScaffoldSetup(
                     CenterAlignedTopAppBar(
                         title = {
                             Text(
-                                text = "Σύνδεση",
+                                text = LanguageUiState.langUiText[language]!!.topAppBarText,
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = white
@@ -120,9 +124,11 @@ fun LoginScaffoldSetup(
                     userId,
                     password,
                     dropDownShow,
+                    language,
                     onChangeUserID,
                     onChangePass,
-                    omnDropDownChange
+                    omnDropDownChange,
+                    onLanguageChange
                 )
             }
         }
@@ -136,9 +142,11 @@ fun LoginScreenContent(
     userId: String,
     password: String,
     dropDownShow: Boolean,
+    language: Boolean,
     onChangeUserID: (String) -> Unit,
     onChangePass: (String) -> Unit,
     omnDropDownChange: () -> Unit,
+    onLanguageChange: (Boolean) -> Unit,
 ) {
     Surface(
         modifier = Modifier
@@ -153,26 +161,27 @@ fun LoginScreenContent(
                 .padding(top = 70.dp)
         ) {
             UserField(
-                title = "UserID",
+                title = LanguageUiState.langUiText[language]!!.userText,
                 value = userId,
                 placeholder = "user id",
-                onValueChange = onChangeUserID
+                onValueChange = onChangeUserID,
             )
             UserField(
-                title = "Κωδικός",
-                value  = password,
+                title = LanguageUiState.langUiText[language]!!.passText,
+                value = password,
                 placeholder = "",
                 topPadding = 30.dp,
                 onValueChange = onChangePass,
-                passShow = true
+                passShow = true,
+                showPassText = LanguageUiState.langUiText[language]!!.showPassText
             )
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Bottom
             ) {
-                LanguageDropDown(dropDownShow, omnDropDownChange)
+                LanguageDropDown(language, dropDownShow, omnDropDownChange, onLanguageChange)
                 Spacer(modifier = Modifier.height(14.dp))
-                LoginButton()
+                LoginButton(language)
             }
         }
     }
@@ -187,6 +196,7 @@ fun UserField(
     onValueChange: (String) -> Unit,
     topPadding: Dp = 0.dp,
     passShow: Boolean = false,
+    showPassText: String = "",
 ) {
     var inputText by remember {
         mutableStateOf("")
@@ -220,7 +230,7 @@ fun UserField(
             }
             if (passShow)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    Text(text = "Προβολή", color = forest_green)
+                    Text(text = showPassText, color = forest_green)
                 }
         }
         TextField(
@@ -240,7 +250,7 @@ fun UserField(
 }
 
 @Composable
-fun LoginButton() {
+fun LoginButton(language: Boolean) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -262,7 +272,7 @@ fun LoginButton() {
             ),
             border = BorderStroke(3.dp, forest_green)
         ) {
-            Text(text = "Σύνδεση", fontSize = 17.sp)
+            Text(text = LanguageUiState.langUiText[language]!!.buttonText, fontSize = 17.sp)
         }
     }
 }
@@ -270,8 +280,10 @@ fun LoginButton() {
 //@Preview
 @Composable
 fun LanguageDropDown(
+    language: Boolean,
     dropDownShow: Boolean = false,
-    omnDropDownChange: () -> Unit,
+    onDropDownChange: () -> Unit,
+    onLanguageChange: (Boolean) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -295,12 +307,12 @@ fun LanguageDropDown(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_greek_flag),
+                        painter = painterResource(id = LanguageUiState.langUiText[language]!!.languageIcon),
                         modifier = Modifier.size(32.dp),
                         contentDescription = null
                     )
                     Text(
-                        text = "Greek",
+                        text = LanguageUiState.langUiText[language]!!.selectedLanguage,
                         color = white,
                         modifier = Modifier.padding(start = 10.dp)
                     )
@@ -317,7 +329,7 @@ fun LanguageDropDown(
                             .width(15.dp)
                             .height(9.dp)
                             .clickable {
-                                omnDropDownChange()
+                                onDropDownChange()
                             },
                         contentDescription = null,
 
@@ -337,9 +349,15 @@ fun LanguageDropDown(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(10.dp)
+                        .clickable { onDropDownChange() }
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onLanguageChange(true)
+                                onDropDownChange()
+                            },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Image(
@@ -355,7 +373,12 @@ fun LanguageDropDown(
                     }
                     Spacer(modifier = Modifier.padding(top = 10.dp))
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onLanguageChange(false)
+                                onDropDownChange()
+                            },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Image(
