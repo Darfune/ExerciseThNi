@@ -7,7 +7,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -19,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -29,8 +29,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,21 +42,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.threenitasapp.R
+import com.example.threenitasapp.domain.usecases.client.ValidationResult
+import com.example.threenitasapp.ui.screens.login.components.InputTextField
 import com.example.threenitasapp.ui.screens.login.components.LanguageUiState
-import com.example.threenitasapp.ui.screens.login.components.TextFieldDialog
+import com.example.threenitasapp.ui.screens.login.components.LoginFormEvent
 import com.example.threenitasapp.ui.theme.ThreenitasAppTheme
-import com.example.threenitasapp.ui.theme.dark_jungle_green_1
 import com.example.threenitasapp.ui.theme.dim_gray
 import com.example.threenitasapp.ui.theme.forest_green
 import com.example.threenitasapp.ui.theme.onyx
 import com.example.threenitasapp.ui.theme.white
-
 
 
 @SuppressLint("CoroutineCreationDuringComposition")
@@ -172,26 +169,30 @@ fun LoginScreenContent(
                 .fillMaxSize()
                 .padding(top = 70.dp)
         ) {
-            UserField(
+            InputTextField(
                 viewModel,
                 viewModel.isUserIdTextFieldDialogShown,
                 true,
                 title = LanguageUiState.langUiText[language]!!.userText,
-                value = userId,
+                userInput = userId,
+                isError = viewModel.loginFormState.userIdError != null,
                 dialogText = LanguageUiState.langUiText[language]!!.userDialogText,
                 onValueChange = onChangeUserID,
+                keyboardOption = KeyboardOptions(keyboardType = KeyboardType.Text)
             )
-            UserField(
+            InputTextField(
                 viewModel,
                 viewModel.isPassIdTextFieldDialogShown,
                 false,
                 title = LanguageUiState.langUiText[language]!!.passText,
-                value = password,
+                userInput = password,
+                isError = viewModel.loginFormState.passwordError != null,
                 dialogText = LanguageUiState.langUiText[language]!!.passDialogText,
-                topPadding = 30.dp,
                 onValueChange = onChangePass,
+                topPadding = 30.dp,
                 passShow = true,
-                showPassText = LanguageUiState.langUiText[language]!!.showPassText
+                showPassText = LanguageUiState.langUiText[language]!!.showPassText,
+                KeyboardOptions(keyboardType = KeyboardType.Password)
             )
             Column(
                 modifier = Modifier.fillMaxSize(),
@@ -199,89 +200,14 @@ fun LoginScreenContent(
             ) {
                 LanguageDropDown(language, dropDownShow, omnDropDownChange, onLanguageChange)
                 Spacer(modifier = Modifier.height(14.dp))
-                LoginButton(language)
+                LoginButton(viewModel,language)
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserField(
-    viewModel: LoginViewModel,
-    isTextFieldDialogShown: Boolean,
-    typeOfField: Boolean,
-    title: String,
-    value: String,
-    dialogText: String,
-    onValueChange: (String) -> Unit,
-    topPadding: Dp = 0.dp,
-    passShow: Boolean = false,
-    showPassText: String = "",
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 36.dp, top = topPadding, end = 36.dp)
-    ) {
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Row {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = white
-                )
-                Box(
-                    modifier = Modifier
-                        .padding(start = 12.dp)
-                        .size(20.dp),
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_info_login),
-                        contentDescription = "login info icon",
-                        modifier = Modifier.clickable {
-                            if (typeOfField)
-                                viewModel.onUserInfoIconClicked()
-                            else
-                                viewModel.onPassInfoIconClicked()
-                        }
-                    )
-                }
-            }
-            if (passShow)
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    Text(text = showPassText, color = forest_green)
-                }
-            if (isTextFieldDialogShown) {
-                TextFieldDialog(
-                    displayText = dialogText,
-                    onDismiss = {
-                        if (typeOfField)
-                            viewModel.onUserDismissTextFieldDialog()
-                        else
-                            viewModel.onPassDismissTextFieldDialog()
-                    }
-                )
-            }
-        }
-        TextField(
-            value = value,
-            onValueChange = {
-                onValueChange(it)
-            },
-            textStyle = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.textFieldColors(
-                textColor = white,
-                containerColor = dark_jungle_green_1,
-                unfocusedIndicatorColor = forest_green
-            ),
-        )
-    }
-}
-
-@Composable
-fun LoginButton(language: Boolean) {
+fun LoginButton(viewModel: LoginViewModel, language: Boolean) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -290,7 +216,11 @@ fun LoginButton(language: Boolean) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         OutlinedButton(
-            onClick = { /*TODO*/ },
+            onClick = {
+                      viewModel.checkValidation(event = LoginFormEvent.Submit)
+
+
+            },
             modifier = Modifier
                 .width(188.dp)
                 .height(49.dp),
@@ -308,7 +238,6 @@ fun LoginButton(language: Boolean) {
     }
 }
 
-//@Preview
 @Composable
 fun LanguageDropDown(
     language: Boolean,
@@ -326,7 +255,10 @@ fun LanguageDropDown(
         Card(
             modifier = Modifier
                 .height(52.dp)
-                .width(150.dp),
+                .width(150.dp)
+                .clickable {
+                    onDropDownChange()
+                },
             shape = RoundedCornerShape(25.5.dp),
             colors = CardDefaults.cardColors(containerColor = onyx)
         ) {
@@ -358,13 +290,9 @@ fun LanguageDropDown(
                         painter = painterResource(id = R.drawable.ic_arrow_drop_down_menu),
                         modifier = Modifier
                             .width(15.dp)
-                            .height(9.dp)
-                            .clickable {
-                                onDropDownChange()
-                            },
+                            .height(9.dp),
                         contentDescription = null,
-
-                        )
+                    )
                 }
             }
         }
