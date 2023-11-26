@@ -1,4 +1,4 @@
-package com.example.threenitasapp.domain.usecases
+package com.example.threenitasapp.domain.usecases.remote
 
 import com.example.threenitasapp.common.Resource
 import com.example.threenitasapp.data.remote.models.usertoken.UserToken
