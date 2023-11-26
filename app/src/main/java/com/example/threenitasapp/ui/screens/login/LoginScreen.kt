@@ -1,6 +1,8 @@
 package com.example.threenitasapp.ui.screens.login
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.pm.ActivityInfo
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -39,14 +41,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.threenitasapp.R
 import com.example.threenitasapp.ui.screens.login.components.LanguageUiState
+import com.example.threenitasapp.ui.screens.login.components.TextFieldDialog
 import com.example.threenitasapp.ui.theme.ThreenitasAppTheme
 import com.example.threenitasapp.ui.theme.dark_jungle_green_1
 import com.example.threenitasapp.ui.theme.dim_gray
@@ -55,10 +60,13 @@ import com.example.threenitasapp.ui.theme.onyx
 import com.example.threenitasapp.ui.theme.white
 
 
-//@Preview(showSystemUi = true, showBackground = true, device = "id:pixel_3")
+
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
+
+    val context = LocalContext.current
+    (context as? Activity)?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
 
     var userId by rememberSaveable {
         mutableStateOf("")
@@ -77,6 +85,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
 
     LoginScaffoldSetup(
         Modifier.fillMaxSize(),
+        viewModel,
         userId,
         password,
         dropDownShow,
@@ -92,6 +101,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
 @Composable
 fun LoginScaffoldSetup(
     modifier: Modifier = Modifier,
+    viewModel: LoginViewModel,
     userId: String,
     password: String,
     dropDownShow: Boolean,
@@ -121,6 +131,7 @@ fun LoginScaffoldSetup(
                 }) {
                 LoginScreenContent(
                     it,
+                    viewModel,
                     userId,
                     password,
                     dropDownShow,
@@ -139,6 +150,7 @@ fun LoginScaffoldSetup(
 @Composable
 fun LoginScreenContent(
     paddingValues: PaddingValues,
+    viewModel: LoginViewModel,
     userId: String,
     password: String,
     dropDownShow: Boolean,
@@ -161,15 +173,21 @@ fun LoginScreenContent(
                 .padding(top = 70.dp)
         ) {
             UserField(
+                viewModel,
+                viewModel.isUserIdTextFieldDialogShown,
+                true,
                 title = LanguageUiState.langUiText[language]!!.userText,
                 value = userId,
-                placeholder = "user id",
+                dialogText = LanguageUiState.langUiText[language]!!.userDialogText,
                 onValueChange = onChangeUserID,
             )
             UserField(
+                viewModel,
+                viewModel.isPassIdTextFieldDialogShown,
+                false,
                 title = LanguageUiState.langUiText[language]!!.passText,
                 value = password,
-                placeholder = "",
+                dialogText = LanguageUiState.langUiText[language]!!.passDialogText,
                 topPadding = 30.dp,
                 onValueChange = onChangePass,
                 passShow = true,
@@ -190,17 +208,17 @@ fun LoginScreenContent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserField(
+    viewModel: LoginViewModel,
+    isTextFieldDialogShown: Boolean,
+    typeOfField: Boolean,
     title: String,
     value: String,
-    placeholder: String,
+    dialogText: String,
     onValueChange: (String) -> Unit,
     topPadding: Dp = 0.dp,
     passShow: Boolean = false,
     showPassText: String = "",
 ) {
-    var inputText by remember {
-        mutableStateOf("")
-    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -208,7 +226,6 @@ fun UserField(
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {
             Row {
-
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
@@ -223,7 +240,10 @@ fun UserField(
                         painter = painterResource(id = R.drawable.ic_info_login),
                         contentDescription = "login info icon",
                         modifier = Modifier.clickable {
-
+                            if (typeOfField)
+                                viewModel.onUserInfoIconClicked()
+                            else
+                                viewModel.onPassInfoIconClicked()
                         }
                     )
                 }
@@ -232,6 +252,17 @@ fun UserField(
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     Text(text = showPassText, color = forest_green)
                 }
+            if (isTextFieldDialogShown) {
+                TextFieldDialog(
+                    displayText = dialogText,
+                    onDismiss = {
+                        if (typeOfField)
+                            viewModel.onUserDismissTextFieldDialog()
+                        else
+                            viewModel.onPassDismissTextFieldDialog()
+                    }
+                )
+            }
         }
         TextField(
             value = value,
