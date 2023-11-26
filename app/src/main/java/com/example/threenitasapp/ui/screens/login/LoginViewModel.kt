@@ -5,18 +5,29 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.threenitasapp.common.Constants
 import com.example.threenitasapp.common.Resource
 import com.example.threenitasapp.domain.models.LoginBody
-import com.example.threenitasapp.domain.usecases.GetUserTokenUseCase
+import com.example.threenitasapp.domain.usecases.client.PasswordValidation
+import com.example.threenitasapp.domain.usecases.client.UserIdValidation
+import com.example.threenitasapp.domain.usecases.remote.GetUserTokenUseCase
+import com.example.threenitasapp.ui.screens.login.components.LoginFormEvent
+import com.example.threenitasapp.ui.screens.login.components.LoginFormState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val getUserTokenUseCase: GetUserTokenUseCase,
+    private val userIdValidation: UserIdValidation,
+    private val passwordValidation: PasswordValidation,
 ) : ViewModel() {
 
+    // Info Dialogs
     var isUserIdTextFieldDialogShown by mutableStateOf(false)
         private set
 
@@ -39,6 +50,10 @@ class LoginViewModel @Inject constructor(
         isPassIdTextFieldDialogShown = false
     }
 
+    // Login Validation
+    var loginFormState by mutableStateOf(LoginFormState())
+    private val validationEventChannel = Channel<ValidationEvent>()
+    val validationEvents =validationEventChannel.receiveAsFlow()
 
     suspend fun getToken(loginBody: LoginBody) =
         getUserTokenUseCase(loginBody)
@@ -51,16 +66,44 @@ class LoginViewModel @Inject constructor(
                 }
             }
 
-    fun checkUserIDContent(textFieldFlag: Boolean, userInput: String): Boolean =
-        if (textFieldFlag) {
-            userInput.matches(Constants.userIDCondition)
-        } else {
-            userInput.matches(Constants.lengthCondition) &&
-                    userInput.matches(Constants.upperCaseLettersCondition) &&
-                    userInput.matches(Constants.lowerCaseLettersCondition) &&
-                    userInput.matches(Constants.digitsCondition) &&
-                    userInput.matches(Constants.specialCharacterCondition)
-        }
+    fun checkValidation(textFieldFlag: Boolean? = null, userInput: String? = null, event: LoginFormEvent) {
+        when (event) {
+            is LoginFormEvent.UserIdChanged -> {
+                loginFormState = loginFormState.copy(userId = event.userId)
+            }
 
+            is LoginFormEvent.PasswordChanged -> {
+                loginFormState = loginFormState.copy(password = event.password)
+            }
+
+            is LoginFormEvent.Submit -> {
+                submitData()
+            }
+        }
+    }
+
+    private fun submitData() {
+        val userIdResult = userIdValidation(loginFormState.userId)
+        val passwordResult = passwordValidation(loginFormState.password)
+
+        val hasError = listOf(
+            userIdResult,
+            passwordResult,
+        ).any {!it.successful}
+        if (hasError){
+            loginFormState = loginFormState.copy(
+                userIdError = userIdResult.errorMessage,
+                passwordError = passwordResult.errorMessage
+            )
+            return
+        }
+        viewModelScope.launch {
+            validationEventChannel.send(ValidationEvent.Success)
+        }
+    }
+
+    sealed class ValidationEvent{
+        object Success: ValidationEvent()
+    }
 
 }
