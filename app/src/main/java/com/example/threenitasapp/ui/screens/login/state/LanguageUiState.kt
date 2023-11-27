@@ -15,6 +15,8 @@ class UiText(
     val selectedLanguage: String,
     val languageIcon: Int,
     val buttonText: String,
+    val invalidInputs: String,
     val userIdError: List<String>,
     val passError: List<String>,
+    val invalidCredentials: List<String>
 )

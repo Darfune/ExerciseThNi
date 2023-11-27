@@ -23,6 +23,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.threenitasapp.R
 import com.example.threenitasapp.ui.screens.login.state.LoginState
+import com.example.threenitasapp.ui.screens.login.state.StateConstants
 import com.example.threenitasapp.ui.theme.onyx
 import com.example.threenitasapp.ui.theme.white
 
@@ -32,7 +33,7 @@ fun LanguageDropDown(
     language: Boolean,
     dropDownShow: Boolean = false,
     onDropDownChange: () -> Unit,
-    onLanguageChange: (Boolean) -> Unit,
+    onLanguageChange: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -59,12 +60,12 @@ fun LanguageDropDown(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
-                        painter = painterResource(id = state.language[language]!!.languageIcon),
+                        painter = painterResource(id = StateConstants.langUiText[language]!!.languageIcon),
                         modifier = Modifier.size(32.dp),
                         contentDescription = null
                     )
                     Text(
-                        text = state.language[language]!!.selectedLanguage,
+                        text = StateConstants.langUiText[language]!!.selectedLanguage,
                         color = white,
                         modifier = Modifier.padding(start = 10.dp)
                     )
@@ -103,7 +104,7 @@ fun LanguageDropDown(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                onLanguageChange(true)
+                                onLanguageChange()
                                 onDropDownChange()
                             },
                         verticalAlignment = Alignment.CenterVertically
@@ -124,7 +125,7 @@ fun LanguageDropDown(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                onLanguageChange(false)
+                                onLanguageChange()
                                 onDropDownChange()
                             },
                         verticalAlignment = Alignment.CenterVertically

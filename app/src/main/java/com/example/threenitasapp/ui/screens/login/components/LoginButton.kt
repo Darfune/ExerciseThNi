@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import com.example.threenitasapp.ui.screens.login.LoginViewModel
 import com.example.threenitasapp.ui.screens.login.state.LoginFormEvent
 import com.example.threenitasapp.ui.screens.login.state.LoginState
+import com.example.threenitasapp.ui.screens.login.state.StateConstants
 import com.example.threenitasapp.ui.theme.dim_gray
 import com.example.threenitasapp.ui.theme.forest_green
 
@@ -47,7 +48,7 @@ fun LoginButton(viewModel: LoginViewModel, state: LoginState, language: Boolean)
             ),
             border = BorderStroke(3.dp, forest_green)
         ) {
-            Text(text = state.language[language]!!.buttonText, fontSize = 17.sp)
+            Text(text = StateConstants.langUiText[language]!!.buttonText, fontSize = 17.sp)
         }
     }
 }

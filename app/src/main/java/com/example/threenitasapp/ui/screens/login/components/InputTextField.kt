@@ -74,8 +74,8 @@ fun InputTextField(
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     Text(
-                        text = if (passVisibility) showAndHidePassText[0]
-                        else showAndHidePassText[1],
+                        text = if (passVisibility) showAndHidePassText[1]
+                        else showAndHidePassText[0],
                         color = forest_green,
                         modifier = Modifier.clickable { passVisibility = !passVisibility }
                     )

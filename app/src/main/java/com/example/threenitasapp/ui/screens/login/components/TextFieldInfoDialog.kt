@@ -19,7 +19,7 @@ import com.example.threenitasapp.ui.theme.white
 @Composable
 fun TextFieldInfoDialog(
     displayText: String,
-    onDismiss: () -> Unit = {},
+    onDismiss: () -> Unit,
 ) {
     Dialog(
         onDismissRequest = { onDismiss() },

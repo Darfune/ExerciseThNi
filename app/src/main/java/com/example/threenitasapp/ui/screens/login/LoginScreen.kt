@@ -24,7 +24,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -41,6 +40,7 @@ import com.example.threenitasapp.ui.screens.login.state.LoginState
 import com.example.threenitasapp.ui.screens.login.components.LoginButton
 import com.example.threenitasapp.ui.screens.login.components.TextFieldErrorDialog
 import com.example.threenitasapp.ui.screens.login.components.TextFieldInfoDialog
+import com.example.threenitasapp.ui.screens.login.state.StateConstants
 import com.example.threenitasapp.ui.theme.ThreenitasAppTheme
 import com.example.threenitasapp.ui.theme.onyx
 import com.example.threenitasapp.ui.theme.white
@@ -51,18 +51,12 @@ import com.example.threenitasapp.ui.theme.white
 fun LoginScreen(
     state: LoginState,
     viewModel: LoginViewModel = hiltViewModel(),
+    onSuccess: (String) -> Unit,
 ) {
 
     val context = LocalContext.current
     (context as? Activity)?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
 
-    var error by remember {
-        mutableStateOf("")
-    }
-    var language by rememberSaveable {
-        mutableStateOf(false)
-    }
-    Log.d("LoginScreen: ", "$state")
 
 
     LaunchedEffect(key1 = context) {
@@ -71,13 +65,12 @@ fun LoginScreen(
                 is LoginViewModel.ValidationEvent.Success -> {
                     viewModel.getToken()
                 }
-
                 is LoginViewModel.ValidationEvent.Error -> {
-                    if (viewModel.loginFormState.passwordError != null)
-                        error =
-                            state.language[language]!!.passError[viewModel.loginFormState.passwordError!!]
-                    else error =
-                        state.language[language]!!.userIdError[viewModel.loginFormState.userIdError!!]
+                    if (viewModel.loginFormState.passwordError != null) {
+                        state.errorBodyToShow =
+                            StateConstants.langUiText[state.currentLanguage]!!.passError[viewModel.loginFormState.passwordError!!]
+                    } else state.errorBodyToShow =
+                        StateConstants.langUiText[state.currentLanguage]!!.userIdError[viewModel.loginFormState.userIdError!!]
                 }
             }
         }
@@ -95,11 +88,13 @@ fun LoginScreen(
         viewModel,
         state,
         dropDownShow,
-        language,
-        { dropDownShow = !dropDownShow },
-        { language = it },
-        error
+        state.currentLanguage,
+        { dropDownShow = !dropDownShow }
     )
+
+    if (!state.accessToken.isNullOrEmpty()){
+        onSuccess(state.accessToken)
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,10 +104,8 @@ fun LoginScaffoldSetup(
     viewModel: LoginViewModel,
     state: LoginState,
     dropDownShow: Boolean,
-    language: Boolean,
-    omnDropDownChange: () -> Unit,
-    onLanguageChange: (Boolean) -> Unit,
-    error: String,
+    currentLanguage: Boolean,
+    omnDropDownChange: () -> Unit
 ) {
     ThreenitasAppTheme {
         Surface(
@@ -123,7 +116,7 @@ fun LoginScaffoldSetup(
                     CenterAlignedTopAppBar(
                         title = {
                             Text(
-                                text = state.language[language]!!.topAppBarText,
+                                text = StateConstants.langUiText[currentLanguage]!!.topAppBarText,
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = white
@@ -137,10 +130,8 @@ fun LoginScaffoldSetup(
                     viewModel,
                     state,
                     dropDownShow,
-                    language,
-                    omnDropDownChange,
-                    onLanguageChange,
-                    error
+                    currentLanguage,
+                    omnDropDownChange
                 )
             }
         }
@@ -154,10 +145,8 @@ fun LoginScreenContent(
     viewModel: LoginViewModel,
     state: LoginState,
     dropDownShow: Boolean,
-    language: Boolean,
+    currentLanguage: Boolean,
     omnDropDownChange: () -> Unit,
-    onLanguageChange: (Boolean) -> Unit,
-    error: String,
 ) {
     Surface(
         modifier = Modifier
@@ -173,7 +162,7 @@ fun LoginScreenContent(
         ) {
             InputTextField(
                 onInfoIconClicked = viewModel::onUserInfoIconClicked,
-                title = state.language[language]!!.userText,
+                title = StateConstants.langUiText[currentLanguage]!!.userText,
                 userInput = state.userId,
                 isError = viewModel.loginFormState.userIdError != null,
                 onValueChange = {
@@ -187,7 +176,7 @@ fun LoginScreenContent(
             Spacer(modifier = Modifier.height(10.dp))
             InputTextField(
                 onInfoIconClicked = viewModel::onPassInfoIconClicked,
-                title = state.language[language]!!.passText,
+                title = StateConstants.langUiText[currentLanguage]!!.passText,
                 userInput = state.password,
                 isError = viewModel.loginFormState.passwordError != null,
 
@@ -196,8 +185,8 @@ fun LoginScreenContent(
                     viewModel.onValidationEvent(LoginFormEvent.PasswordChanged(it))
                 },
                 showAndHidePassText = listOf(
-                    state.language[language]!!.showPassText,
-                    state.language[language]!!.hidePassText
+                    StateConstants.langUiText[currentLanguage]!!.showPassText,
+                    StateConstants.langUiText[currentLanguage]!!.hidePassText
                 ),
                 keyboardOption = KeyboardOptions(keyboardType = KeyboardType.Password),
                 visualTransformation = PasswordVisualTransformation()
@@ -206,25 +195,38 @@ fun LoginScreenContent(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Bottom
             ) {
-                LanguageDropDown(state, language, dropDownShow, omnDropDownChange, onLanguageChange)
+                LanguageDropDown(
+                    state,
+                    currentLanguage,
+                    dropDownShow,
+                    omnDropDownChange,
+                    viewModel::onLanguageChange
+                )
                 Spacer(modifier = Modifier.height(14.dp))
-                LoginButton(viewModel, state, language)
+                LoginButton(viewModel, state, currentLanguage)
             }
-            if (error.isNotBlank()) {
-                TextFieldErrorDialog(error)
-            }
-            if (viewModel.isUserIdTextFieldDialogShown) {
+            if (state.isUserIdTextFieldDialogShown) {
+                Log.d("LoginScreen: ", "$state")
                 TextFieldInfoDialog(
-                    displayText = state.language[language]!!.userDialogText,
+                    displayText = StateConstants.langUiText[currentLanguage]!!.userDialogText,
                     onDismiss = viewModel::onUserDismissTextFieldDialog
                 )
             }
-            if (viewModel.isPassIdTextFieldDialogShown) {
+            if (state.isPassIdTextFieldDialogShown) {
                 TextFieldInfoDialog(
-                    displayText = state.language[language]!!.passDialogText,
+                    displayText = StateConstants.langUiText[currentLanguage]!!.passDialogText,
                     onDismiss = viewModel::onPassDismissTextFieldDialog
                 )
             }
+            if (state.isErrorDialogShown) {
+                TextFieldErrorDialog(
+                    errorTitle = state.errorTitleToShow ?: "Not Found",
+                    errorBody = state.errorBodyToShow ?: "Not Found",
+                    buttonText = "return",
+                    onDismiss = viewModel::onDismissErrorDialog
+                )
+            }
+
         }
     }
 }

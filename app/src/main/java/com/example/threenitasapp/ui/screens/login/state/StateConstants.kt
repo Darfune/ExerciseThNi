@@ -14,6 +14,7 @@ object StateConstants {
         selectedLanguage = "English",
         languageIcon = R.drawable.ic_us_flag,
         buttonText = "Login",
+        invalidInputs = "Not accepted data",
         userIdError = listOf("The UserID can't be blank", "The UserID is not valid"),
         passError = listOf(
             "The password can't be blank.",
@@ -22,6 +23,9 @@ object StateConstants {
             "The password must contain 3 lower case letters.",
             "The password must contain 2 digits.",
             "The password must contain 1 special character.",
+        ),
+        invalidCredentials = listOf(
+            "Wrong Credentials",
             "You have submitted incorrect data."
         )
 
@@ -37,6 +41,7 @@ object StateConstants {
         selectedLanguage = "Greek",
         languageIcon = R.drawable.ic_greek_flag,
         buttonText = "Σύνδεση",
+        invalidInputs = "Μη αποδεκτά στοιχεία",
         userIdError = listOf("Το UserID δεν μπορεί να είναι κενό", "Το UserID δεν είναι έγκυρο"),
         passError = listOf(
             "Ο κωδικός πρόσβασης δεν μπορεί να είναι κενός.",
@@ -46,7 +51,12 @@ object StateConstants {
             "Ο κωδικός πρόσβασης πρέπει να περιέχει 2 ψηφία.",
             "Ο κωδικός πρόσβασης πρέπει να περιέχει 1 ειδικό χαρακτήρα.",
             "Έχετε υποβάλει λάθος στοιχεία."
-        )
+        ),
+        invalidCredentials = listOf(
+            "Λανθασμένα στοιχεία",
+            "Έχετε υποβάλει λάθος στοιχεία"
+            )
+
     )
 
     val langUiText = hashMapOf(

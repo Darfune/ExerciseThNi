@@ -14,6 +14,7 @@ import com.example.threenitasapp.domain.usecases.remote.GetUserTokenUseCase
 import com.example.threenitasapp.ui.screens.login.state.LoginFormEvent
 import com.example.threenitasapp.ui.screens.login.state.LoginFormState
 import com.example.threenitasapp.ui.screens.login.state.LoginState
+import com.example.threenitasapp.ui.screens.login.state.StateConstants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +23,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val getUserTokenUseCase: GetUserTokenUseCase,
@@ -32,54 +32,84 @@ class LoginViewModel @Inject constructor(
 
     // User Input
 
-    private val _uiState: MutableStateFlow<LoginState> = MutableStateFlow(
+    private var _uiState: MutableStateFlow<LoginState> = MutableStateFlow(
         LoginState(
             userId = "",
             password = "",
+            currentLanguage = true,
+            isUserIdTextFieldDialogShown = false,
+            isPassIdTextFieldDialogShown = false,
+            isErrorDialogShown = false
         )
     )
     val uiState: StateFlow<LoginState> = _uiState.asStateFlow()
 
+    // Language change
+    fun onLanguageChange() = viewModelScope.launch {
+        _uiState.emit(_uiState.value.copy(currentLanguage = !_uiState.value.currentLanguage))
+    }
+
     // Info Dialogs
-
-    var isUserIdTextFieldDialogShown by mutableStateOf(false)
-        private set
-    var isPassIdTextFieldDialogShown by mutableStateOf(false)
-        private set
-    fun onUserInfoIconClicked() {
-        isUserIdTextFieldDialogShown = true
-        Log.d("onUserInfoIconClicked: ", "$isUserIdTextFieldDialogShown")
+    fun onUserInfoIconClicked() = viewModelScope.launch {
+        _uiState.emit(_uiState.value.copy(isUserIdTextFieldDialogShown = true))
     }
 
-    fun onUserDismissTextFieldDialog() {
-        isUserIdTextFieldDialogShown = false
-        Log.d("onUserDismissDialog: ", "$isUserIdTextFieldDialogShown")
+    fun onUserDismissTextFieldDialog() = viewModelScope.launch {
+        _uiState.emit(_uiState.value.copy(isUserIdTextFieldDialogShown = false))
     }
 
-    fun onPassInfoIconClicked() {
-        isPassIdTextFieldDialogShown = true
-        Log.d("onUserInfoIconClicked: ", "$isUserIdTextFieldDialogShown")
+    fun onPassInfoIconClicked() = viewModelScope.launch {
+        _uiState.emit(_uiState.value.copy(isPassIdTextFieldDialogShown = true))
     }
 
-    fun onPassDismissTextFieldDialog() {
-        isPassIdTextFieldDialogShown = false
-        Log.d("onUserInfoIconClicked: ", "$isUserIdTextFieldDialogShown")
+    fun onPassDismissTextFieldDialog() = viewModelScope.launch {
+        _uiState.emit(_uiState.value.copy(isPassIdTextFieldDialogShown = false))
     }
+
+    // Error Dialog
+    fun showErrorDialog() = viewModelScope.launch {
+        _uiState.emit(_uiState.value.copy(isErrorDialogShown = true))
+    }
+
+    fun onDismissErrorDialog() = viewModelScope.launch {
+        _uiState.emit(
+            _uiState.value.copy(
+                isErrorDialogShown = false,
+                errorBodyToShow = "",
+                errorTitleToShow = ""
+            )
+        )
+    }
+
 
     // Login Validation
     var loginFormState by mutableStateOf(LoginFormState())
     private val validationEventChannel = Channel<ValidationEvent>()
     val validationEvents = validationEventChannel.receiveAsFlow()
 
-    suspend fun getToken() =
+    suspend fun getToken() {
+        Log.d("ViewModel", "${LoginBody(_uiState.value.userId, _uiState.value.password)}")
         getUserTokenUseCase(LoginBody(_uiState.value.userId, _uiState.value.password))
             .collect { response ->
-                when (response) {
-                    is Resource.Success -> Log.d("ViewModel", "getToken: ${response.data}")
-                    is Resource.Error -> Log.d("ViewModel", "getToken: ${response.message}")
+                Log.d("ViewModel", "response ${response.data}")
+                    when (response) {
+                    is Resource.Success -> {
+                        viewModelScope.launch {
+                            _uiState.emit(_uiState.value.copy(accessToken = response.data?.accessToken))
+                        }
+                    }
+                    is Resource.Error -> {
+                        Log.d("ViewModel", "getToken: ${response.message}")
+                        invalidCredential()
+                        showErrorDialog()
+                    }
+
                     is Resource.Loading -> Log.d("ViewModel", "getToken: Loading")
                 }
             }
+    }
+
+
 
 
     fun onValidationEvent(event: LoginFormEvent) {
@@ -111,7 +141,9 @@ class LoginViewModel @Inject constructor(
                 userIdError = userIdResult.errorMessage,
                 passwordError = passwordResult.errorMessage
             )
+            setErrorMessage()
             viewModelScope.launch {
+                showErrorDialog()
                 validationEventChannel.send(ValidationEvent.Error)
             }
             return
@@ -126,6 +158,40 @@ class LoginViewModel @Inject constructor(
         object Error : ValidationEvent()
     }
 
+
+    // Error messages handler
+    private fun setErrorMessage() {
+        if (loginFormState.userIdError != null) {
+            viewModelScope.launch {
+                _uiState.emit(
+                    _uiState.value.copy(
+                        errorTitleToShow = "Wrong Inputs",
+                        errorBodyToShow = StateConstants.langUiText[_uiState.value.currentLanguage]!!.userIdError[loginFormState.userIdError!!]
+                    )
+                )
+            }
+        } else if (loginFormState.passwordError != null) {
+            viewModelScope.launch {
+                _uiState.emit(
+                    _uiState.value.copy(
+                        errorTitleToShow = "Wrong Inputs",
+                        errorBodyToShow = StateConstants.langUiText[_uiState.value.currentLanguage]!!.passError[loginFormState.passwordError!!]
+                    )
+                )
+            }
+        }
+    }
+    private fun invalidCredential() {
+        viewModelScope.launch {
+            _uiState.emit(
+                _uiState.value.copy(
+                    errorTitleToShow = StateConstants.langUiText[_uiState.value.currentLanguage]!!.invalidCredentials[0],
+                    errorBodyToShow = StateConstants.langUiText[_uiState.value.currentLanguage]!!.invalidCredentials[1]
+                )
+            )
+        }
+    }
 }
+
 
 
