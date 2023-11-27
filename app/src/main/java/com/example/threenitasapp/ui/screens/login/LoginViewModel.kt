@@ -7,7 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.threenitasapp.common.Resource
-import com.example.threenitasapp.domain.models.LoginBody
+import com.example.threenitasapp.domain.models.remote.LoginBody
 import com.example.threenitasapp.domain.usecases.client.PasswordValidation
 import com.example.threenitasapp.domain.usecases.client.UserIdValidation
 import com.example.threenitasapp.domain.usecases.remote.GetUserTokenUseCase
@@ -31,7 +31,6 @@ class LoginViewModel @Inject constructor(
 ) : ViewModel() {
 
     // User Input
-
     private var _uiState: MutableStateFlow<LoginState> = MutableStateFlow(
         LoginState(
             userId = "",
@@ -108,9 +107,6 @@ class LoginViewModel @Inject constructor(
                 }
             }
     }
-
-
-
 
     fun onValidationEvent(event: LoginFormEvent) {
         when (event) {

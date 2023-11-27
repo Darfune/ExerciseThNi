@@ -1,10 +1,6 @@
 package com.example.threenitasapp.domain.usecases.client
 
 import com.example.threenitasapp.common.Constants
-import com.example.threenitasapp.common.Resource
-import com.example.threenitasapp.data.remote.models.usertoken.UserToken
-import com.example.threenitasapp.domain.models.LoginBody
-import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class UserIdValidation @Inject constructor(){

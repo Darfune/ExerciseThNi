@@ -106,4 +106,7 @@ dependencies {
     implementation("androidx.room:room-runtime:$room_version")
     annotationProcessor("androidx.room:room-compiler:$room_version")
 
+    // Coil library for remote image loading
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
 }

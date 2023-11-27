@@ -10,11 +10,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.threenitasapp.ui.screens.list.BookListScreen
+import com.example.threenitasapp.ui.screens.list.BookListViewModel
 import com.example.threenitasapp.ui.screens.login.LoginScreen
 import com.example.threenitasapp.ui.screens.login.LoginViewModel
 
 @Composable
-fun AppNavigation(navHostController: NavHostController, loginViewModel: LoginViewModel) {
+fun AppNavigation(
+    navHostController: NavHostController,
+    loginViewModel: LoginViewModel,
+    bookListViewModel: BookListViewModel,
+) {
     NavHost(navController = navHostController, startDestination = AppScreens.LoginScreen.name) {
         composable(route = AppScreens.LoginScreen.name) {
             val state by loginViewModel.uiState.collectAsState()
@@ -37,6 +42,7 @@ fun AppNavigation(navHostController: NavHostController, loginViewModel: LoginVie
             val token = backStackEntry.arguments?.getString("token") ?: ""
             BookListScreen(
                 token = token,
+                viewModel = bookListViewModel
             )
         }
     }

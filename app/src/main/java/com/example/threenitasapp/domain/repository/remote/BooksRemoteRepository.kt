@@ -1,9 +1,9 @@
-package com.example.threenitasapp.domain.repository
+package com.example.threenitasapp.domain.repository.remote
 
 import com.example.threenitasapp.common.Resource
-import com.example.threenitasapp.data.remote.models.usertoken.Book
-import com.example.threenitasapp.data.remote.models.usertoken.UserToken
-import com.example.threenitasapp.domain.models.LoginBody
+import com.example.threenitasapp.data.remote.models.Book
+import com.example.threenitasapp.data.remote.models.UserToken
+import com.example.threenitasapp.domain.models.remote.LoginBody
 import kotlinx.coroutines.flow.Flow
 
 interface BooksRemoteRepository {

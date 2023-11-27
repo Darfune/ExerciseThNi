@@ -1,4 +1,4 @@
-package com.example.threenitasapp.domain.models
+package com.example.threenitasapp.domain.models.remote
 
 
 import com.google.gson.annotations.SerializedName

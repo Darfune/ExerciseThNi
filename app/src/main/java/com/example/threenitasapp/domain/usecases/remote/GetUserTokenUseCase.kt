@@ -1,9 +1,9 @@
 package com.example.threenitasapp.domain.usecases.remote
 
 import com.example.threenitasapp.common.Resource
-import com.example.threenitasapp.data.remote.models.usertoken.UserToken
-import com.example.threenitasapp.domain.models.LoginBody
-import com.example.threenitasapp.domain.repository.BooksRemoteRepository
+import com.example.threenitasapp.data.remote.models.UserToken
+import com.example.threenitasapp.domain.models.remote.LoginBody
+import com.example.threenitasapp.domain.repository.remote.BooksRemoteRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 

@@ -1,4 +1,4 @@
-package com.example.threenitasapp.data.remote.models.usertoken
+package com.example.threenitasapp.data.remote.models
 
 
 import com.google.gson.annotations.SerializedName
