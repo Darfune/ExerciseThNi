@@ -1,7 +1,6 @@
 package com.example.threenitasapp.ui.screens.login.components
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,9 +17,8 @@ import androidx.compose.ui.window.Dialog
 import com.example.threenitasapp.ui.theme.onyx
 import com.example.threenitasapp.ui.theme.white
 
-@Preview
 @Composable
-fun TextFieldErrorDialog() {
+fun TextFieldErrorDialog(error: String) {
     Dialog(onDismissRequest = { }) {
         Card(
             modifier = Modifier.width(300.dp),
@@ -35,7 +33,7 @@ fun TextFieldErrorDialog() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                Text(text = "Error")
+                Text(text = error)
                 Button(onClick = { }, modifier = Modifier.fillMaxWidth()) {
                     Text(text = "Ok")
                 }

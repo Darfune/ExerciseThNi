@@ -3,94 +3,102 @@ package com.example.threenitasapp.ui.screens.login
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.ActivityInfo
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation.Companion.None
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.threenitasapp.R
-import com.example.threenitasapp.domain.usecases.client.ValidationResult
 import com.example.threenitasapp.ui.screens.login.components.InputTextField
-import com.example.threenitasapp.ui.screens.login.components.LanguageUiState
-import com.example.threenitasapp.ui.screens.login.components.LoginFormEvent
+import com.example.threenitasapp.ui.screens.login.components.LanguageDropDown
+import com.example.threenitasapp.ui.screens.login.state.LoginFormEvent
+import com.example.threenitasapp.ui.screens.login.state.LoginState
+import com.example.threenitasapp.ui.screens.login.components.LoginButton
+import com.example.threenitasapp.ui.screens.login.components.TextFieldErrorDialog
+import com.example.threenitasapp.ui.screens.login.components.TextFieldInfoDialog
 import com.example.threenitasapp.ui.theme.ThreenitasAppTheme
-import com.example.threenitasapp.ui.theme.dim_gray
-import com.example.threenitasapp.ui.theme.forest_green
 import com.example.threenitasapp.ui.theme.onyx
 import com.example.threenitasapp.ui.theme.white
 
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
+fun LoginScreen(
+    state: LoginState,
+    viewModel: LoginViewModel = hiltViewModel(),
+) {
 
     val context = LocalContext.current
     (context as? Activity)?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
 
-    var userId by rememberSaveable {
+    var error by remember {
         mutableStateOf("")
+    }
+    var language by rememberSaveable {
+        mutableStateOf(false)
+    }
+    Log.d("LoginScreen: ", "$state")
+
+
+    LaunchedEffect(key1 = context) {
+        viewModel.validationEvents.collect { event ->
+            when (event) {
+                is LoginViewModel.ValidationEvent.Success -> {
+                    viewModel.getToken()
+                }
+
+                is LoginViewModel.ValidationEvent.Error -> {
+                    if (viewModel.loginFormState.passwordError != null)
+                        error =
+                            state.language[language]!!.passError[viewModel.loginFormState.passwordError!!]
+                    else error =
+                        state.language[language]!!.userIdError[viewModel.loginFormState.userIdError!!]
+                }
+            }
+        }
     }
 
-    var password by rememberSaveable {
-        mutableStateOf("")
-    }
+
     var dropDownShow by remember {
         mutableStateOf(false)
     }
 
-    var language by rememberSaveable {
-        mutableStateOf(false)
-    }
+
 
     LoginScaffoldSetup(
         Modifier.fillMaxSize(),
         viewModel,
-        userId,
-        password,
+        state,
         dropDownShow,
         language,
-        { userId = it },
-        { password = it },
         { dropDownShow = !dropDownShow },
-        { language = it }
+        { language = it },
+        error
     )
 }
 
@@ -99,14 +107,12 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
 fun LoginScaffoldSetup(
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel,
-    userId: String,
-    password: String,
+    state: LoginState,
     dropDownShow: Boolean,
     language: Boolean,
-    onChangeUserID: (String) -> Unit,
-    onChangePass: (String) -> Unit,
     omnDropDownChange: () -> Unit,
     onLanguageChange: (Boolean) -> Unit,
+    error: String,
 ) {
     ThreenitasAppTheme {
         Surface(
@@ -117,7 +123,7 @@ fun LoginScaffoldSetup(
                     CenterAlignedTopAppBar(
                         title = {
                             Text(
-                                text = LanguageUiState.langUiText[language]!!.topAppBarText,
+                                text = state.language[language]!!.topAppBarText,
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = white
@@ -129,14 +135,12 @@ fun LoginScaffoldSetup(
                 LoginScreenContent(
                     it,
                     viewModel,
-                    userId,
-                    password,
+                    state,
                     dropDownShow,
                     language,
-                    onChangeUserID,
-                    onChangePass,
                     omnDropDownChange,
-                    onLanguageChange
+                    onLanguageChange,
+                    error
                 )
             }
         }
@@ -148,14 +152,12 @@ fun LoginScaffoldSetup(
 fun LoginScreenContent(
     paddingValues: PaddingValues,
     viewModel: LoginViewModel,
-    userId: String,
-    password: String,
+    state: LoginState,
     dropDownShow: Boolean,
     language: Boolean,
-    onChangeUserID: (String) -> Unit,
-    onChangePass: (String) -> Unit,
     omnDropDownChange: () -> Unit,
     onLanguageChange: (Boolean) -> Unit,
+    error: String,
 ) {
     Surface(
         modifier = Modifier
@@ -170,188 +172,58 @@ fun LoginScreenContent(
                 .padding(top = 70.dp)
         ) {
             InputTextField(
-                viewModel,
-                viewModel.isUserIdTextFieldDialogShown,
-                true,
-                title = LanguageUiState.langUiText[language]!!.userText,
-                userInput = userId,
+                onInfoIconClicked = viewModel::onUserInfoIconClicked,
+                title = state.language[language]!!.userText,
+                userInput = state.userId,
                 isError = viewModel.loginFormState.userIdError != null,
-                dialogText = LanguageUiState.langUiText[language]!!.userDialogText,
-                onValueChange = onChangeUserID,
-                keyboardOption = KeyboardOptions(keyboardType = KeyboardType.Text)
+                onValueChange = {
+                    state.userId = it
+                    viewModel.onValidationEvent(LoginFormEvent.UserIdChanged(it))
+                },
+//                onInfoIconClicked = viewModel.onUserInfoIconClicked(),
+                keyboardOption = KeyboardOptions(keyboardType = KeyboardType.Text),
+                visualTransformation = None
             )
+            Spacer(modifier = Modifier.height(10.dp))
             InputTextField(
-                viewModel,
-                viewModel.isPassIdTextFieldDialogShown,
-                false,
-                title = LanguageUiState.langUiText[language]!!.passText,
-                userInput = password,
+                onInfoIconClicked = viewModel::onPassInfoIconClicked,
+                title = state.language[language]!!.passText,
+                userInput = state.password,
                 isError = viewModel.loginFormState.passwordError != null,
-                dialogText = LanguageUiState.langUiText[language]!!.passDialogText,
-                onValueChange = onChangePass,
-                topPadding = 30.dp,
-                passShow = true,
-                showPassText = LanguageUiState.langUiText[language]!!.showPassText,
-                KeyboardOptions(keyboardType = KeyboardType.Password)
+
+                onValueChange = {
+                    viewModel.uiState.value.password = it
+                    viewModel.onValidationEvent(LoginFormEvent.PasswordChanged(it))
+                },
+                showAndHidePassText = listOf(
+                    state.language[language]!!.showPassText,
+                    state.language[language]!!.hidePassText
+                ),
+                keyboardOption = KeyboardOptions(keyboardType = KeyboardType.Password),
+                visualTransformation = PasswordVisualTransformation()
             )
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Bottom
             ) {
-                LanguageDropDown(language, dropDownShow, omnDropDownChange, onLanguageChange)
+                LanguageDropDown(state, language, dropDownShow, omnDropDownChange, onLanguageChange)
                 Spacer(modifier = Modifier.height(14.dp))
-                LoginButton(viewModel,language)
+                LoginButton(viewModel, state, language)
             }
-        }
-    }
-}
-
-@Composable
-fun LoginButton(viewModel: LoginViewModel, language: Boolean) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 50.dp),
-        verticalArrangement = Arrangement.Bottom,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        OutlinedButton(
-            onClick = {
-                      viewModel.checkValidation(event = LoginFormEvent.Submit)
-
-
-            },
-            modifier = Modifier
-                .width(188.dp)
-                .height(49.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Transparent,
-                contentColor = forest_green,
-                disabledContainerColor = dim_gray,
-                disabledContentColor = dim_gray
-
-            ),
-            border = BorderStroke(3.dp, forest_green)
-        ) {
-            Text(text = LanguageUiState.langUiText[language]!!.buttonText, fontSize = 17.sp)
-        }
-    }
-}
-
-@Composable
-fun LanguageDropDown(
-    language: Boolean,
-    dropDownShow: Boolean = false,
-    onDropDownChange: () -> Unit,
-    onLanguageChange: (Boolean) -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(162.dp)
-            .padding(end = 32.dp),
-        horizontalAlignment = Alignment.End
-    ) {
-        Card(
-            modifier = Modifier
-                .height(52.dp)
-                .width(150.dp)
-                .clickable {
-                    onDropDownChange()
-                },
-            shape = RoundedCornerShape(25.5.dp),
-            colors = CardDefaults.cardColors(containerColor = onyx)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(start = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        painter = painterResource(id = LanguageUiState.langUiText[language]!!.languageIcon),
-                        modifier = Modifier.size(32.dp),
-                        contentDescription = null
-                    )
-                    Text(
-                        text = LanguageUiState.langUiText[language]!!.selectedLanguage,
-                        color = white,
-                        modifier = Modifier.padding(start = 10.dp)
-                    )
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(end = 10.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_arrow_drop_down_menu),
-                        modifier = Modifier
-                            .width(15.dp)
-                            .height(9.dp),
-                        contentDescription = null,
-                    )
-                }
+            if (error.isNotBlank()) {
+                TextFieldErrorDialog(error)
             }
-        }
-        if (dropDownShow) {
-            Spacer(modifier = Modifier.padding(bottom = 6.dp))
-            Card(
-                modifier = Modifier
-                    .width(150.dp),
-                shape = RoundedCornerShape(25.5.dp),
-                colors = CardDefaults.cardColors(containerColor = onyx),
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp)
-                        .clickable { onDropDownChange() }
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                onLanguageChange(true)
-                                onDropDownChange()
-                            },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_us_flag),
-                            modifier = Modifier.size(32.dp),
-                            contentDescription = null
-                        )
-                        Text(
-                            text = "English",
-                            color = white,
-                            modifier = Modifier.padding(start = 10.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.padding(top = 10.dp))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                onLanguageChange(false)
-                                onDropDownChange()
-                            },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_greek_flag),
-                            modifier = Modifier.size(32.dp),
-                            contentDescription = null
-                        )
-                        Text(
-                            text = "Greek",
-                            color = white,
-                            modifier = Modifier.padding(start = 10.dp)
-                        )
-                    }
-                }
+            if (viewModel.isUserIdTextFieldDialogShown) {
+                TextFieldInfoDialog(
+                    displayText = state.language[language]!!.userDialogText,
+                    onDismiss = viewModel::onUserDismissTextFieldDialog
+                )
+            }
+            if (viewModel.isPassIdTextFieldDialogShown) {
+                TextFieldInfoDialog(
+                    displayText = state.language[language]!!.passDialogText,
+                    onDismiss = viewModel::onPassDismissTextFieldDialog
+                )
             }
         }
     }

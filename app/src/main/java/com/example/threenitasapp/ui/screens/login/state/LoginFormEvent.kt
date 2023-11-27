@@ -1,4 +1,4 @@
-package com.example.threenitasapp.ui.screens.login.components
+package com.example.threenitasapp.ui.screens.login.state
 
 sealed class LoginFormEvent {
     data class UserIdChanged(val userId: String): LoginFormEvent()

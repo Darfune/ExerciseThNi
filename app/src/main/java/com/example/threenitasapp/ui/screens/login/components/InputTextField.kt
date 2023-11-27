@@ -16,13 +16,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation.Companion.None
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.threenitasapp.R
 import com.example.threenitasapp.ui.screens.login.LoginViewModel
@@ -33,23 +34,22 @@ import com.example.threenitasapp.ui.theme.white
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InputTextField(
-    viewModel: LoginViewModel,
-    isTextFieldDialogShown: Boolean,
-    typeOfField: Boolean,
     title: String,
+    onInfoIconClicked: () -> Unit,
     userInput: String,
     isError: Boolean,
-    dialogText: String,
     onValueChange: (String) -> Unit,
-    topPadding: Dp = 0.dp,
-    passShow: Boolean = false,
-    showPassText: String = "",
+    showAndHidePassText: List<String>? = null,
     keyboardOption: KeyboardOptions,
+    visualTransformation: VisualTransformation,
 ) {
+    var passVisibility by remember {
+        mutableStateOf(false)
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 36.dp, top = topPadding, end = 36.dp)
+            .padding(start = 36.dp, end = 36.dp)
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {
             Row {
@@ -66,36 +66,25 @@ fun InputTextField(
                     Image(
                         painter = painterResource(id = R.drawable.ic_info_login),
                         contentDescription = "login info icon",
-                        modifier = Modifier.clickable {
-                            if (typeOfField)
-                                viewModel.onUserInfoIconClicked()
-                            else
-                                viewModel.onPassInfoIconClicked()
-                        }
+                        modifier = Modifier.clickable { onInfoIconClicked() }
                     )
                 }
             }
-            if (passShow)
+            if (!showAndHidePassText.isNullOrEmpty())
+
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    Text(text = showPassText, color = forest_green)
+                    Text(
+                        text = if (passVisibility) showAndHidePassText[0]
+                        else showAndHidePassText[1],
+                        color = forest_green,
+                        modifier = Modifier.clickable { passVisibility = !passVisibility }
+                    )
                 }
-            if (isTextFieldDialogShown) {
-                TextFieldInfoDialog(
-                    displayText = dialogText,
-                    onDismiss = {
-                        if (typeOfField)
-                            viewModel.onUserDismissTextFieldDialog()
-                        else
-                            viewModel.onPassDismissTextFieldDialog()
-                    }
-                )
-            }
+
         }
         TextField(
             value = userInput,
-            onValueChange = {
-                onValueChange(it)
-            },
+            onValueChange = { onValueChange(it) },
             isError = isError,
             textStyle = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.fillMaxWidth(),
@@ -110,7 +99,7 @@ fun InputTextField(
                 }
             },
             keyboardOptions = keyboardOption,
-            visualTransformation = if (!typeOfField)PasswordVisualTransformation() else None
+            visualTransformation = if (!passVisibility) visualTransformation else None
         )
     }
 }

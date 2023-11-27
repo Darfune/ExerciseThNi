@@ -8,17 +8,17 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class UserIdValidation @Inject constructor(){
-    operator fun invoke(userId: String, languageFlag: Boolean? = null): ValidationResult {
+    operator fun invoke(userId: String): ValidationResult {
         if (userId.isBlank()) {
             return ValidationResult(
                 successful = false,
-                errorMessage = "The UserID can't be blank"
+                errorMessage = 0
             )
         }
         if (!userId.matches(Constants.userIDCondition)){
             return ValidationResult(
                 successful = false,
-                errorMessage = "The UserID is not valid"
+                errorMessage = 1
             )
         }
         return ValidationResult(successful = true)

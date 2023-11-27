@@ -8,37 +8,37 @@ class PasswordValidation @Inject constructor(){
         if (password.isBlank()) {
             return ValidationResult(
                 successful = false,
-                errorMessage = "The password can't be blank"
+                errorMessage = 0
             )
         }
         if (!password.matches(Constants.lengthCondition)) {
             return ValidationResult(
                 successful = false,
-                errorMessage = "The password must be 8 characters long"
+                errorMessage = 1
             )
         }
         if (!password.contains(Constants.upperCaseLettersCondition)) {
             return ValidationResult(
                 successful = false,
-                errorMessage = "The password must contain 2 Upper case letters"
+                errorMessage = 2
             )
         }
         if (!password.contains(Constants.lowerCaseLettersCondition)) {
             return ValidationResult(
                 successful = false,
-                errorMessage = "The password must contain 3 lower case letters"
+                errorMessage = 3
             )
         }
         if (!password.contains(Constants.digitsCondition)) {
             return ValidationResult(
                 successful = false,
-                errorMessage = "The password must contain 2 digits"
+                errorMessage = 4
             )
         }
         if (!password.contains(Constants.specialCharacterCondition)) {
             return ValidationResult(
                 successful = false,
-                errorMessage = "The password must contain 1 special character"
+                errorMessage = 5
             )
         }
         return ValidationResult(successful = true)
