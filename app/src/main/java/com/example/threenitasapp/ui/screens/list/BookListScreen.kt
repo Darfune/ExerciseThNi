@@ -5,5 +5,5 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun BookListScreen(token: String? = null, viewModel: BookListViewModel) {
-    Text(text = "Test")
+
 }
