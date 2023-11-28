@@ -1,47 +1,54 @@
 package com.example.threenitasapp.ui.screens.home.list
 
-import android.util.Log
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.example.threenitasapp.data.remote.AndroidDownloader
 import com.example.threenitasapp.ui.screens.home.list.components.BookItem
+import com.example.threenitasapp.ui.screens.home.list.components.YearHeader
 import com.example.threenitasapp.ui.screens.home.list.state.RemoteState
+import ua.hospes.lazygrid.GridCells
+import ua.hospes.lazygrid.LazyVerticalGrid
+import ua.hospes.lazygrid.items
 
+@RequiresApi(Build.VERSION_CODES.N)
 @Composable
 fun BookListScreen(
     token: String? = null,
     viewModel: BookListViewModel = hiltViewModel(),
     navController: NavHostController,
 ) {
+    val downloader = AndroidDownloader(LocalContext.current)
 
-    ListOfBooks(viewModel.uiRemoteState.value)
+    ListOfBooks(viewModel.uiRemoteState.value, downloader)
 }
 
+@RequiresApi(Build.VERSION_CODES.N)
 @Composable
-fun ListOfBooks(books: RemoteState) {
-//    if (books.isLoading) {
-//        CircularProgressIndicator()
-//    } else if (books.error.isNotBlank()) {
-//        Text(text = "An Error occurred", color = MaterialTheme.colorScheme.error)
-//    } else {
-        LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(4.dp)){
-            items(items = books.allBooks){ book ->
-                Log.d("BookListScreen", "ListOfBooks: $book")
-                BookItem(book)
+fun ListOfBooks(books: RemoteState, downloader: AndroidDownloader) {
+
+    Column {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            contentPadding = PaddingValues(start = 40.dp, top = 20.dp, bottom = 30.dp),
+        ) {
+            books.allBooks.toSortedMap(Comparator.reverseOrder()).forEach { year, books ->
+                stickyHeader {
+                    YearHeader(year = year)
+                }
+
+                items(books){book ->
+                    BookItem(book = book, downloader)
+                }
             }
-//        }
+        }
     }
 }

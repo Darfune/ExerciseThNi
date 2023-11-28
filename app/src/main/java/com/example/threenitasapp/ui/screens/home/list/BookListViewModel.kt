@@ -7,10 +7,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.threenitasapp.common.Resource
+import com.example.threenitasapp.data.remote.mapper.toBookData
 import com.example.threenitasapp.domain.local.usecase.DeleteBookFromDatabaseUseCase
 import com.example.threenitasapp.domain.local.usecase.GetAllBookFromDatabaseUseCase
 import com.example.threenitasapp.domain.local.usecase.GetBookByIdFromDatabaseUseCase
 import com.example.threenitasapp.domain.local.usecase.InsertBookToDatabaseUseCase
+import com.example.threenitasapp.domain.remote.model.BookData
 import com.example.threenitasapp.domain.remote.usecase.GetBooksFromApiUseCase
 import com.example.threenitasapp.ui.screens.home.list.state.LocalState
 import com.example.threenitasapp.ui.screens.home.list.state.RemoteState
@@ -40,6 +42,7 @@ class BookListViewModel @Inject constructor(
     var _uiLocalState: MutableStateFlow<LocalState> = MutableStateFlow(LocalState(null))
     val uiLocalState: StateFlow<LocalState> = _uiLocalState.asStateFlow()
 
+
     init {
         viewModelScope.launch {
             getAllBooksRequest()
@@ -50,7 +53,7 @@ class BookListViewModel @Inject constructor(
     private fun getAllBooksForDB() = getAllBooksFromDatabaseUseCase()
         .onEach {
             _uiLocalState.value = LocalState(storedBooks = Resource.Success(it))
-            Log.d("BookListViewModel", "getAllBooksForDB: $it")
+//            Log.d("BookListViewModel", "getAllBooksForDB: $it")
         }
         .catch { _uiLocalState.value = LocalState(storedBooks = Resource.Error(it.message!!)) }
         .launchIn(viewModelScope)
@@ -59,9 +62,29 @@ class BookListViewModel @Inject constructor(
         getBooksFromApiUseCase("T1amGT21.Idup.298885bf38e99053dca3434eb59c6aa").onEach { response ->
             when (response) {
                 is Resource.Success -> {
+                    var bookHashMap = hashMapOf<String, List<BookData>>()
+                    var years = mutableListOf<String>()
+                    response.data!!.forEach { book ->
+                        if (!years.contains(book.dateReleased.substring(0, 4)))
+                            years.add(book.dateReleased.substring(0, 4))
+                    }
+
+                    for (year in years) {
+                        var tempList = mutableListOf<BookData>()
+                        response.data!!.forEach { book ->
+                            if (book.dateReleased.subSequence(0, 4) == year) {
+                                tempList.add(book.toBookData())
+                            }
+                        }
+                        bookHashMap[year] = tempList
+                    }
+
                     _uiRemoteState.value =
-                        RemoteState(allBooks = response.data ?: emptyList(), isLoading = false)
-                    Log.d("BookListViewModel", "getAllBooksRequest: ${response.data}")
+                        RemoteState(allBooks = bookHashMap, isLoading = false)
+//                    Log.d(
+//                        "BookListViewModel",
+//                        "!!getAllBooksRequest: ${_uiRemoteState.value.allBooks}"
+//                    )
                 }
 
                 is Resource.Error -> {
