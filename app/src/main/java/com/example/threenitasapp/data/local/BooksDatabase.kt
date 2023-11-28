@@ -2,13 +2,11 @@ package com.example.threenitasapp.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
-import com.example.threenitasapp.data.local.models.Book
+import com.example.threenitasapp.data.local.models.BookEntity
 
 
-@TypeConverters()
 @Database(
-    entities = [Book::class],
+    entities = [BookEntity::class],
     version = 1,
     exportSchema = false
 )

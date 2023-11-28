@@ -1,5 +1,6 @@
 package com.example.threenitasapp.domain.usecases.client
 
+import com.example.threenitasapp.domain.client.usecase.PasswordValidation
 import org.junit.Assert.*
 
 import org.junit.Before

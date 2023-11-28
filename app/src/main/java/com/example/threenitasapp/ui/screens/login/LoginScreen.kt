@@ -40,7 +40,7 @@ import com.example.threenitasapp.ui.screens.login.state.LoginState
 import com.example.threenitasapp.ui.screens.login.components.LoginButton
 import com.example.threenitasapp.ui.screens.login.components.TextFieldErrorDialog
 import com.example.threenitasapp.ui.screens.login.components.TextFieldInfoDialog
-import com.example.threenitasapp.ui.screens.login.state.StateConstants
+import com.example.threenitasapp.common.StateConstants
 import com.example.threenitasapp.ui.theme.ThreenitasAppTheme
 import com.example.threenitasapp.ui.theme.onyx
 import com.example.threenitasapp.ui.theme.white

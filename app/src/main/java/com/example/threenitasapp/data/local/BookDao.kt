@@ -4,24 +4,20 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Update
-import com.example.threenitasapp.data.local.models.Book
+import com.example.threenitasapp.data.local.models.BookEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface BookDao {
-    @Query("SELECT * FROM books ORDER BY id")
-    fun getAllBooks(): Flow<List<Book>>
+    @Query("SELECT * FROM books_table")
+    fun getAllBooks(): Flow<List<BookEntity>>
 
-    @Query("SELECT * FROM books WHERE id=:id ORDER BY dateReleased")
-    fun getBookById(id: Int):Flow<Book>
+    @Query("SELECT * FROM books_table WHERE id=:id")
+    fun getBookById(id: Int): Flow<BookEntity>?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertBook(book: Book)
+    suspend fun insertBook(bookEntity: BookEntity)
 
-    @Update(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun updateBook(book: Book)
-
-    @Query("DELETE FROM books WHERE id=:id")
+    @Query("DELETE FROM books_table WHERE id=:id")
     suspend fun delete(id: Int)
 }

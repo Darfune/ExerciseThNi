@@ -1,6 +1,6 @@
 package com.example.threenitasapp.domain.usecases.client
 
-import org.junit.Assert.*
+import com.example.threenitasapp.domain.client.usecase.UserIdValidation
 
 import org.junit.Before
 import org.junit.Test

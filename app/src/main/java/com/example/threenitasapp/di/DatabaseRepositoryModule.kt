@@ -1,8 +1,7 @@
 package com.example.threenitasapp.di
 
-import com.example.threenitasapp.data.local.repository.BooksDatabaseRepositoryImpl
-import com.example.threenitasapp.data.remote.repository.BooksRemoteRepositoryImpl
-import com.example.threenitasapp.domain.repository.local.BooksDatabaseRepository
+import com.example.threenitasapp.data.local.repository.BookDatabaseRepositoryImpl
+import com.example.threenitasapp.domain.local.repository.BookDatabaseRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -14,5 +13,5 @@ import javax.inject.Singleton
 abstract class DatabaseRepositoryModule {
     @Binds
     @Singleton
-    abstract fun bindDatabaseRepository(repositoryImpl: BooksDatabaseRepositoryImpl): BooksDatabaseRepository
+    abstract fun bindRepository(repositoryImpl: BookDatabaseRepositoryImpl): BookDatabaseRepository
 }

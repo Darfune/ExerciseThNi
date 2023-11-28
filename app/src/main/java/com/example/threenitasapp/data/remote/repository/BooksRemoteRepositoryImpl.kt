@@ -7,8 +7,8 @@ import com.example.threenitasapp.common.Resource
 import com.example.threenitasapp.data.remote.BooksRemoteApi
 import com.example.threenitasapp.data.remote.models.Book
 import com.example.threenitasapp.data.remote.models.UserToken
-import com.example.threenitasapp.domain.models.remote.LoginBody
-import com.example.threenitasapp.domain.repository.remote.BooksRemoteRepository
+import com.example.threenitasapp.domain.remote.model.LoginBody
+import com.example.threenitasapp.domain.remote.repository.BooksRemoteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.io.IOException

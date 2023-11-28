@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.sp
 import com.example.threenitasapp.ui.screens.login.LoginViewModel
 import com.example.threenitasapp.ui.screens.login.state.LoginFormEvent
 import com.example.threenitasapp.ui.screens.login.state.LoginState
-import com.example.threenitasapp.ui.screens.login.state.StateConstants
+import com.example.threenitasapp.common.StateConstants
 import com.example.threenitasapp.ui.theme.dim_gray
 import com.example.threenitasapp.ui.theme.forest_green
 

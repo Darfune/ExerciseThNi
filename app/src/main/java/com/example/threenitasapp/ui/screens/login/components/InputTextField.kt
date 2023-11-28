@@ -88,9 +88,9 @@ fun InputTextField(
             isError = isError,
             textStyle = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.textFieldColors(
-                textColor = white,
-                containerColor = dark_jungle_green_1,
+            colors = TextFieldDefaults.colors(
+                focusedTextColor = white,
+                focusedContainerColor = dark_jungle_green_1,
                 unfocusedIndicatorColor = forest_green
             ),
             trailingIcon = {

@@ -2,7 +2,7 @@ package com.example.threenitasapp.data.remote
 
 import com.example.threenitasapp.data.remote.models.Book
 import com.example.threenitasapp.data.remote.models.UserToken
-import com.example.threenitasapp.domain.models.remote.LoginBody
+import com.example.threenitasapp.domain.remote.model.LoginBody
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header

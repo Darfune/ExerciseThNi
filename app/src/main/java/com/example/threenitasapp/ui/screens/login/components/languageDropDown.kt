@@ -23,7 +23,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.threenitasapp.R
 import com.example.threenitasapp.ui.screens.login.state.LoginState
-import com.example.threenitasapp.ui.screens.login.state.StateConstants
+import com.example.threenitasapp.common.StateConstants
 import com.example.threenitasapp.ui.theme.onyx
 import com.example.threenitasapp.ui.theme.white
 
