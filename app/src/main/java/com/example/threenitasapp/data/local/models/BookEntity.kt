@@ -7,8 +7,4 @@ import androidx.room.PrimaryKey
 data class BookEntity(
     @PrimaryKey(autoGenerate = false)
     val id: Int,
-    val title: String,
-    val imgUrl: String,
-    val dateReleased: String,
-    val pdfUrl: String,
 )
