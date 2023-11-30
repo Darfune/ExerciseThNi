@@ -32,20 +32,13 @@ class BookListViewModel @Inject constructor(
     val getAllBooksFromDatabaseUseCase: GetAllBookFromDatabaseUseCase,
     val insertBooksFromDatabaseUseCase: InsertBookToDatabaseUseCase,
     val getBooksByIdFromDatabaseUseCase: GetBookByIdFromDatabaseUseCase,
-    val deleteBookFromDatabaseUseCase: DeleteBookFromDatabaseUseCase,
     val downloader: AndroidDownloader,
 ) : ViewModel() {
 
     var _uiRemoteState: MutableStateFlow<RemoteState> = MutableStateFlow(RemoteState())
     val uiRemoteState: StateFlow<RemoteState> = _uiRemoteState.asStateFlow()
 
-    init {
-        viewModelScope.launch {
-            getAllData("T1amGT21.Idup.298885bf38e99053dca3434eb59c6aa")
-        }
-    }
-
-    private suspend fun getAllData(token: String) {
+    suspend fun getAllData(token: String) {
         getAllBooksRequest(token)
         getAllBooksForDB()
     }

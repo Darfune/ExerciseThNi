@@ -23,7 +23,7 @@ fun RootNavigationGraph(
     NavHost(
         navController = navHostController,
         route = Graphs.Root.name,
-        startDestination = Graphs.Home.name
+        startDestination = Graphs.Login.name
     ) {
         composable(route = Graphs.Login.name) {
             val state by loginViewModel.uiState.collectAsState()
@@ -32,7 +32,7 @@ fun RootNavigationGraph(
                 viewModel = loginViewModel
             ) {
                 navHostController.navigateToSingleTop(
-                    route = Graphs.Home.name + "?token=T1amGT21.Idup.298885bf38e99053dca3434eb59c6aa"
+                    route = Graphs.Home.name + "?token=$it"
                 )
             }
         }

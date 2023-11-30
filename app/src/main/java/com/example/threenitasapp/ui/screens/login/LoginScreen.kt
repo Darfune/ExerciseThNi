@@ -3,7 +3,6 @@ package com.example.threenitasapp.ui.screens.login
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.ActivityInfo
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -31,16 +30,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation.Companion.None
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.threenitasapp.common.StateConstants
 import com.example.threenitasapp.ui.screens.login.components.InputTextField
 import com.example.threenitasapp.ui.screens.login.components.LanguageDropDown
-import com.example.threenitasapp.ui.screens.login.state.LoginFormEvent
-import com.example.threenitasapp.ui.screens.login.state.LoginState
 import com.example.threenitasapp.ui.screens.login.components.LoginButton
 import com.example.threenitasapp.ui.screens.login.components.TextFieldErrorDialog
-import com.example.threenitasapp.ui.screens.login.components.TextFieldInfoDialog
-import com.example.threenitasapp.common.StateConstants
+import com.example.threenitasapp.ui.screens.login.state.LoginFormEvent
+import com.example.threenitasapp.ui.screens.login.state.LoginState
 import com.example.threenitasapp.ui.theme.ThreenitasAppTheme
 import com.example.threenitasapp.ui.theme.onyx
 import com.example.threenitasapp.ui.theme.white
@@ -65,6 +65,7 @@ fun LoginScreen(
                 is LoginViewModel.ValidationEvent.Success -> {
                     viewModel.getToken()
                 }
+
                 is LoginViewModel.ValidationEvent.Error -> {
                     if (viewModel.loginFormState.passwordError != null) {
                         state.errorBodyToShow =
@@ -92,7 +93,7 @@ fun LoginScreen(
         { dropDownShow = !dropDownShow }
     )
 
-    if (!state.accessToken.isNullOrEmpty()){
+    if (!state.accessToken.isNullOrEmpty()) {
         onSuccess(state.accessToken)
     }
 }
@@ -105,7 +106,7 @@ fun LoginScaffoldSetup(
     state: LoginState,
     dropDownShow: Boolean,
     currentLanguage: Boolean,
-    omnDropDownChange: () -> Unit
+    omnDropDownChange: () -> Unit,
 ) {
     ThreenitasAppTheme {
         Surface(
@@ -169,17 +170,24 @@ fun LoginScreenContent(
                     state.userId = it
                     viewModel.onValidationEvent(LoginFormEvent.UserIdChanged(it))
                 },
-//                onInfoIconClicked = viewModel.onUserInfoIconClicked(),
                 keyboardOption = KeyboardOptions(keyboardType = KeyboardType.Text),
                 visualTransformation = None
             )
-            Spacer(modifier = Modifier.height(10.dp))
+            if (state.errorUserIdTextToShow != null) {
+                Text(
+                    text = state.errorUserIdTextToShow ?: "",
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(start = 36.dp),
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Justify
+                )
+            }
+            Spacer(modifier = Modifier.height(20.dp))
             InputTextField(
                 onInfoIconClicked = viewModel::onPassInfoIconClicked,
                 title = StateConstants.langUiText[currentLanguage]!!.passText,
                 userInput = state.password,
                 isError = viewModel.loginFormState.passwordError != null,
-
                 onValueChange = {
                     viewModel.uiState.value.password = it
                     viewModel.onValidationEvent(LoginFormEvent.PasswordChanged(it))
@@ -189,8 +197,17 @@ fun LoginScreenContent(
                     StateConstants.langUiText[currentLanguage]!!.hidePassText
                 ),
                 keyboardOption = KeyboardOptions(keyboardType = KeyboardType.Password),
-                visualTransformation = PasswordVisualTransformation()
+                visualTransformation = PasswordVisualTransformation(),
             )
+            if (state.errorPassTextToShow != null) {
+                Text(
+                    text = state.errorPassTextToShow ?: "",
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(start = 36.dp),
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Justify
+                )
+            }
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Bottom
@@ -204,19 +221,6 @@ fun LoginScreenContent(
                 )
                 Spacer(modifier = Modifier.height(14.dp))
                 LoginButton(viewModel, state, currentLanguage)
-            }
-            if (state.isUserIdTextFieldDialogShown) {
-                Log.d("LoginScreen: ", "$state")
-                TextFieldInfoDialog(
-                    displayText = StateConstants.langUiText[currentLanguage]!!.userDialogText,
-                    onDismiss = viewModel::onUserDismissTextFieldDialog
-                )
-            }
-            if (state.isPassIdTextFieldDialogShown) {
-                TextFieldInfoDialog(
-                    displayText = StateConstants.langUiText[currentLanguage]!!.passDialogText,
-                    onDismiss = viewModel::onPassDismissTextFieldDialog
-                )
             }
             if (state.isErrorDialogShown) {
                 TextFieldErrorDialog(

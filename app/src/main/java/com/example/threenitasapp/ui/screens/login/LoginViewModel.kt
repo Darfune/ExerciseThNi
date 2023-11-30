@@ -138,10 +138,10 @@ class LoginViewModel @Inject constructor(
                 passwordError = passwordResult.errorMessage
             )
             setErrorMessage()
-            viewModelScope.launch {
-                showErrorDialog()
-                validationEventChannel.send(ValidationEvent.Error)
-            }
+//            viewModelScope.launch {
+//                showErrorDialog()
+//                validationEventChannel.send(ValidationEvent.Error)
+//            }
             return
         }
         viewModelScope.launch {
@@ -161,8 +161,7 @@ class LoginViewModel @Inject constructor(
             viewModelScope.launch {
                 _uiState.emit(
                     _uiState.value.copy(
-                        errorTitleToShow = "Wrong Inputs",
-                        errorBodyToShow = StateConstants.langUiText[_uiState.value.currentLanguage]!!.userIdError[loginFormState.userIdError!!]
+                        errorUserIdTextToShow = StateConstants.langUiText[_uiState.value.currentLanguage]!!.userIdError[loginFormState.userIdError!!]
                     )
                 )
             }
@@ -170,8 +169,7 @@ class LoginViewModel @Inject constructor(
             viewModelScope.launch {
                 _uiState.emit(
                     _uiState.value.copy(
-                        errorTitleToShow = "Wrong Inputs",
-                        errorBodyToShow = StateConstants.langUiText[_uiState.value.currentLanguage]!!.passError[loginFormState.passwordError!!]
+                        errorPassTextToShow = StateConstants.langUiText[_uiState.value.currentLanguage]!!.passError[loginFormState.passwordError!!]
                     )
                 )
             }

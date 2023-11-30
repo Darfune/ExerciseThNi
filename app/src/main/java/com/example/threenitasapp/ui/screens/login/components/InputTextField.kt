@@ -21,17 +21,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation.Companion.None
 import androidx.compose.ui.unit.dp
 import com.example.threenitasapp.R
-import com.example.threenitasapp.ui.screens.login.LoginViewModel
 import com.example.threenitasapp.ui.theme.dark_jungle_green_1
 import com.example.threenitasapp.ui.theme.forest_green
 import com.example.threenitasapp.ui.theme.white
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InputTextField(
     title: String,
@@ -91,7 +90,12 @@ fun InputTextField(
             colors = TextFieldDefaults.colors(
                 focusedTextColor = white,
                 focusedContainerColor = dark_jungle_green_1,
-                unfocusedIndicatorColor = forest_green
+                unfocusedIndicatorColor = forest_green,
+                unfocusedContainerColor = dark_jungle_green_1,
+                errorContainerColor = dark_jungle_green_1,
+                errorCursorColor = MaterialTheme.colorScheme.error,
+                errorTextColor = Color.White,
+                unfocusedTextColor = Color.White
             ),
             trailingIcon = {
                 if (isError) {
@@ -99,7 +103,8 @@ fun InputTextField(
                 }
             },
             keyboardOptions = keyboardOption,
-            visualTransformation = if (!passVisibility) visualTransformation else None
+            visualTransformation = if (!passVisibility) visualTransformation else None,
+            enabled = true
         )
     }
 }
