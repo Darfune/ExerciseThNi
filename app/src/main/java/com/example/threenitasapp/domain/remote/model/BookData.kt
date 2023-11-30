@@ -7,4 +7,7 @@ data class BookData(
     val title: String,
     val imgUrl: String,
     val pdfUrl: String,
+    var progress: Float = 0f,
+    var isDownloading: Boolean = false,
+    var isDownloaded: Boolean = false
 )

@@ -18,8 +18,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             ThreenitasAppTheme {
                 val navController = rememberNavController()
+                val loginViewModel: LoginViewModel = viewModel()
+                val bookLoginViewModel: BookListViewModel = viewModel()
                 RootNavigationGraph(
-                    navHostController = navController
+                    navHostController = navController,
+                    loginViewModel,
+                    bookLoginViewModel,
                 )
             }
         }

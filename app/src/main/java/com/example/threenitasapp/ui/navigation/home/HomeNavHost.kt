@@ -1,14 +1,13 @@
 package com.example.threenitasapp.ui.navigation.home
 
+import android.os.Build
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navigation
-import com.example.threenitasapp.ui.navigation.root.Graphs
 import com.example.threenitasapp.ui.screens.home.list.BookListScreen
 import com.example.threenitasapp.ui.screens.home.list.BookListViewModel
 import com.example.threenitasapp.ui.screens.home.misc.MiscScreen
@@ -19,16 +18,27 @@ import com.example.threenitasapp.ui.screens.home.settings.SettingsScreen
 @Composable
 fun HomeNavHost(
     navController: NavHostController,
-    modifier: Modifier = Modifier,
+    token: String,
+    bookLoginViewModel: BookListViewModel,
 ) {
     NavHost(
         navController = navController,
         startDestination = List.route,
-        modifier = modifier
     ) {
         composable(route = List.route) {
-            val bookViewModel = hiltViewModel<BookListViewModel>()
-            BookListScreen(navController = navController, viewModel = bookViewModel)
+            val state by bookLoginViewModel.uiRemoteState.collectAsStateWithLifecycle()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                BookListScreen(
+                    token = token,
+                    state = state,
+                    navController = navController,
+                    viewModel = bookLoginViewModel,
+                    getDate = bookLoginViewModel::getDate,
+                    getAllBooksFromDB = bookLoginViewModel::getAllBooksForDB,
+                    getDownloadId = bookLoginViewModel::startDownload,
+                    insertBookToDB = bookLoginViewModel::insertPDFtoDatabase
+                )
+            }
         }
         composable(route = Link.route) {
             ProfileScreen()

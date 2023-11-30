@@ -1,22 +1,21 @@
 package com.example.threenitasapp.ui.screens.home.list.components
 
 
-import android.annotation.SuppressLint
+import android.app.DownloadManager
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,42 +28,54 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.startActivity
+import androidx.core.content.FileProvider
 import androidx.lifecycle.viewModelScope
 import coil.compose.AsyncImage
 import com.example.threenitasapp.R
 import com.example.threenitasapp.data.local.mapper.toBookEntity
+import com.example.threenitasapp.data.local.models.BookEntity
 import com.example.threenitasapp.domain.remote.model.BookData
 import com.example.threenitasapp.ui.screens.home.list.BookListViewModel
-import com.example.threenitasapp.ui.screens.home.list.state.LocalState
 import com.example.threenitasapp.ui.theme.forest_green_2
 import com.example.threenitasapp.ui.theme.tufts_blue
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope.coroutineContext
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.io.File
 
-@SuppressLint("StateFlowValueCalledInComposition")
+
+
 @Composable
 fun BookItem(
+    index: Int,
     book: BookData,
-    year: String,
+    date: String,
     viewModel: BookListViewModel,
-    uiLocalState: StateFlow<LocalState>,
+    isBookInDB: Boolean,
+    getAllBooksFromDB: () -> Unit,
+    getDownloadId: (String, String) -> Long,
+    insertBookToDB: (BookEntity) -> Unit,
 ) {
+
 
     var downloadId by rememberSaveable {
         mutableStateOf(-1L)
     }
-    var progressBar = viewModel.downloader.observeDownloadProgress(downloadId).collectAsState(
-        initial = 0f
-    )
     var isDownloading by rememberSaveable {
         mutableStateOf(false)
     }
-
+    var progress by rememberSaveable {
+        mutableStateOf(0f)
+    }
+    val context = LocalContext.current
 
 
     Column(modifier = Modifier.padding(bottom = 20.dp)) {
@@ -80,24 +91,23 @@ fun BookItem(
                 contentScale = ContentScale.FillBounds,
                 modifier = Modifier.fillMaxSize(),
             )
-            if (!isDownloading && !uiLocalState.value.storedBooks!!.data!!.contains(book.toBookEntity())) {
+            if (!isDownloading && !isBookInDB) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Surface(modifier = Modifier.size(50.dp), color = Color.Transparent) {
-                        Image(
+                    IconButton(onClick = {
+                        downloadId = getDownloadId(book.title, book.pdfUrl)
+                        getAllBooksFromDB()
+                        isDownloading = true
+
+                    }) {
+                        Icon(
                             painter = painterResource(id = R.drawable.ic_download),
                             contentDescription = null,
-                            modifier = Modifier.clickable {
-                                downloadId =
-                                    viewModel.startDownload(title = book.title, url = book.pdfUrl)
-                                isDownloading = true
-                            }
+                            modifier = Modifier.size(50.dp),
+                            tint = Color.White
                         )
                     }
                 }
-            } else if (progressBar.value < 100f && isDownloading && !uiLocalState.value.storedBooks!!.data!!.contains(
-                    book.toBookEntity()
-                )
-            ) {
+            } else if (isDownloading && !isBookInDB) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -105,16 +115,17 @@ fun BookItem(
                     contentAlignment = Alignment.BottomEnd,
                 ) {
                     LinearProgressIndicator(
-                        progress = { progressBar.value },
+                        progress = { progress },
                         modifier = Modifier.fillMaxWidth(),
                         color = tufts_blue,
                     )
+                    insertBookToDB(book.toBookEntity())
+                    getAllBooksFromDB()
                 }
-            } else if (progressBar.value >= 100f) {
-                DownloadTriangle()
-                LaunchedEffect(key1 = true) {
-                    viewModel.insertBooksFromDatabaseUseCase(book.toBookEntity())
-                }
+            } else if (isBookInDB && isDownloading) {
+                isDownloading = false
+            } else if (isBookInDB && !isDownloading) {
+                DownloadTriangle(context, book)
             }
         }
         Text(
@@ -129,9 +140,8 @@ fun BookItem(
 }
 
 
-@Preview
 @Composable
-fun DownloadTriangle() {
+fun DownloadTriangle(context: Context, book: BookData) {
     Card(
         modifier = Modifier
             .height(40.dp)
@@ -144,7 +154,29 @@ fun DownloadTriangle() {
             topStart = 1000.dp,
         ),
     ) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable {
+                    val f = File(context.cacheDir, book.title.trim() + ".pdf")
+                    val path: Uri = FileProvider.getUriForFile(
+                        context, context.applicationContext.packageName,
+                        f
+                    )
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.setDataAndType(path, "application/pdf")
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    try {
+                        startActivity(context, intent, null)
+                    } catch (e: ActivityNotFoundException) {
+                        Toast
+                            .makeText(context, e.message, Toast.LENGTH_SHORT)
+                            .show()
+                        throw e
+                    }
+                }, contentAlignment = Alignment.BottomEnd
+        ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_check_w),
                 contentDescription = null,
