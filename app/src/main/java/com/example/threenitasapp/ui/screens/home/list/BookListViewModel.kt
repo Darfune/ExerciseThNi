@@ -1,12 +1,16 @@
 package com.example.threenitasapp.ui.screens.home.list
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.threenitasapp.common.Constants
 import com.example.threenitasapp.common.Resource
 import com.example.threenitasapp.data.local.models.BookEntity
-import com.example.threenitasapp.data.remote.AndroidDownloader
+import com.example.threenitasapp.data.remote.downloader.AndroidDownloader
 import com.example.threenitasapp.data.remote.mapper.toBookData
 import com.example.threenitasapp.domain.local.usecase.DeleteBookFromDatabaseUseCase
 import com.example.threenitasapp.domain.local.usecase.GetAllBookFromDatabaseUseCase
@@ -120,10 +124,12 @@ class BookListViewModel @Inject constructor(
     }
 
     fun startDownload(title: String, url: String): Long =
-        downloader.downloadPDF(title, url)
+        downloader.downloadPDF(title.lowercase().trim().replace(" ",""), url)
 
 
-
+    fun openPDFViewer(intent: Intent, context: Context, uri: Uri){
+        context.startActivity(intent)
+    }
 
 
 }

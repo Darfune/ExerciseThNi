@@ -1,4 +1,4 @@
-package com.example.threenitasapp.data.remote
+package com.example.threenitasapp.data.remote.downloader
 
 interface Downloader {
     fun downloadPDF(title: String, url: String): Long

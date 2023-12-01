@@ -52,7 +52,6 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 
-
 @Composable
 fun BookItem(
     index: Int,
@@ -82,7 +81,21 @@ fun BookItem(
         Box(
             modifier = Modifier
                 .width(130.dp)
-                .height(170.dp),
+                .height(170.dp)
+                .clickable {
+                    if (isBookInDB && !isDownloading) {
+                        val externalFilesDir = context.getExternalFilesDir("saved_pdfs")
+                        val filePath = File(externalFilesDir, "${book.title.lowercase().trim().replace(" ","")}.pdf").absolutePath
+
+                        val fileUri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", File(filePath));
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(fileUri, "application/pdf")
+                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        viewModel.openPDFViewer(intent, context,fileUri)
+                    }
+                },
             contentAlignment = Alignment.BottomEnd
         ) {
             AsyncImage(
@@ -188,3 +201,9 @@ fun DownloadTriangle(context: Context, book: BookData) {
         }
     }
 }
+
+@Composable
+fun StartIntent() {
+
+}
+

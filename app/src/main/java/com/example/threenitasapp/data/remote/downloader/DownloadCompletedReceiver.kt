@@ -1,4 +1,4 @@
-package com.example.threenitasapp.data.remote
+package com.example.threenitasapp.data.remote.downloader
 
 import android.app.DownloadManager
 import android.content.BroadcastReceiver

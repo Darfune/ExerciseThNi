@@ -1,4 +1,4 @@
-package com.example.threenitasapp.data.remote
+package com.example.threenitasapp.data.remote.downloader
 
 import android.annotation.SuppressLint
 import android.app.DownloadManager
@@ -11,7 +11,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -40,7 +39,7 @@ class AndroidDownloader @Inject constructor(private val context: Context) : Down
                 .addRequestHeader("Authorization", "Bearer <toke>")
                 .setDestinationInExternalFilesDir(
                     context,
-                    "${context.filesDir.path}/saved_pdfs/",
+                    "saved_pdfs",
                     "$title.pdf"
                 )
         )
@@ -60,7 +59,8 @@ class AndroidDownloader @Inject constructor(private val context: Context) : Down
                 while (true) {
                     val cursor = downloadManager.query(query)
                     if (cursor.moveToFirst()) {
-                        val status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
+                        val status =
+                            cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
                         if (status == DownloadManager.STATUS_SUCCESSFUL || status == DownloadManager.STATUS_FAILED) {
                             // Download completed or failed
                             break

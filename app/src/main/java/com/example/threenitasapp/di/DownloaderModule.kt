@@ -1,7 +1,7 @@
 package com.example.threenitasapp.di
 
 import android.content.Context
-import com.example.threenitasapp.data.remote.AndroidDownloader
+import com.example.threenitasapp.data.remote.downloader.AndroidDownloader
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
