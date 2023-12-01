@@ -63,4 +63,8 @@ emit(downloadPercentage)
 ```
 
 #### Open native PDF viewer
-Due to changes in the android 11 it wasn't clear to me how to save a file in a specific location, how to ask permission for read and write to the system directories and how to start the intent for the PDF viewer. So I couldn't implement the specific functionality to the app.
+Due to changes in the android 11:
+* It wasn't clear to me how to save a file in a specific location. I couldn't make the files to be stored in a specific location, only on the main Downloads folder.
+* I couldn't ask the read/write to external storage permissions, because the IDE didn't show them as permissions (I couldn't find the answer on how to ask them, so I remove the composable dialogs for the perimissions)
+* I couldn't start the intent for the PDF viewer.
+So I couldn't implement the specific functionality to the app.
