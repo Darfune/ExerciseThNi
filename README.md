@@ -43,3 +43,24 @@ A bottom naviagation bar with 4 tabs & circular button in the middle of it.
 
 
 [Screen_recording_2.webm](https://github.com/Darfune/ThreenitasApp/assets/72785430/869cf056-10d9-49c5-a72d-efc5be9a443e)
+
+
+[Screen_recording_3.webm](https://github.com/Darfune/ThreenitasApp/assets/72785430/c331521d-a25f-43bb-95a8-7b7d325d7794)
+
+
+## Not completed tasks
+#### Download Progress Bar
+I manage to implement it to an extent, but due to the total bytes of the files and the bytes that have been downloaded so far, been not very good at both conversion to float variables and the emit functionality, causing the download bar to go from 0% for the duration and instantly to 100% and showing the green triangle with the check mark. I decided to remove it, since it both was not visually appealing, and sometimes it was cause errors.
+```kt
+val bytesDownloaded =
+  cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+val bytesTotal =
+  cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+
+// Calculate the percentage
+val downloadPercentage = (bytesDownloaded * 100f) / bytesTotal
+emit(downloadPercentage)
+```
+
+#### Open native PDF viewer
+Due to changes in the android 11 it wasn't clear to me how to save a file in a specific location, how to ask permission for read and write to the system directories and how to start the intent for the PDF viewer. So I couldn't implement the specific functionality to the app.
