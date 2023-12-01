@@ -38,15 +38,14 @@ A bottom naviagation bar with 4 tabs & circular button in the middle of it.
 |For each month of a year a section should be made. Each section should have as title the month and the year.While the user scrolls the section, the title should stick on the top of the screen until the next title reaches the top.| Done |
 | Download Functionality: The user can click on the download icon in order to download a book. More than one magazine can be downloaded at the same time. | Done |
 | Download Progress Bar: Each download must have its own progress bar like shown in the design resources.When the download will be completed the progress bar must disappear. | Not Done |
-| On tap of the downloaded book the pdf must be shown using the native document viewer of the OS. | Not Done |
-
+| On tap of the downloaded book the pdf must be shown using the native document viewer of the OS. | Done |
 
 
 [Screen_recording_2.webm](https://github.com/Darfune/ThreenitasApp/assets/72785430/869cf056-10d9-49c5-a72d-efc5be9a443e)
 
-
 [Screen_recording_3.webm](https://github.com/Darfune/ThreenitasApp/assets/72785430/c331521d-a25f-43bb-95a8-7b7d325d7794)
 
+[Screen_recording_4.webm](https://github.com/Darfune/ThreenitasApp/assets/72785430/da7dd261-8c38-4289-89b4-175cfc037fc3)
 
 ## Not completed tasks
 #### Download Progress Bar
@@ -64,7 +63,4 @@ emit(downloadPercentage)
 
 #### Open native PDF viewer
 Due to changes in the android 11:
-* It wasn't clear to me how to save a file in a specific location. I couldn't make the files to be stored in a specific location, only on the main Downloads folder.
 * I couldn't ask the read/write to external storage permissions, because the IDE didn't show them as permissions (I couldn't find the answer on how to ask them, so I remove the composable dialogs for the perimissions)
-* I couldn't start the intent for the PDF viewer.
-So I couldn't implement the specific functionality to the app.
