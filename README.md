@@ -50,7 +50,7 @@ A bottom naviagation bar with 4 tabs & circular button in the middle of it.
 
 ## Not completed tasks
 #### Download Progress Bar
-I manage to implement it to an extent, but due to the total bytes of the files and the bytes that have been downloaded so far, been not very good at both conversion to float variables and the emit functionality, causing the download bar to go from 0% for the duration and instantly to 100% and showing the green triangle with the check mark. I decided to remove it, since it both was not visually appealing, and sometimes it was cause errors.
+I manage to implement it to an extent, but due to the total bytes of the files and the bytes that have been downloaded so far, been not very good at both conversion to float variables and the emit functionality, causing the download bar to go from 0% for the duration and instantly to 100% and showing the green triangle with the check mark. I decided to remove it, since it both was not visually appealing, and sometimes it was causing errors.
 ```kt
 val bytesDownloaded =
   cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
